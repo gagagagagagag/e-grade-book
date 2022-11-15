@@ -20,8 +20,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException()
     }
 
-    if (!user.emailVerified) {
-      throw new BadRequestException('Email is not verified')
+    if (!user.passwordInitiated || !user.password) {
+      throw new BadRequestException('Password is not initialized')
     }
 
     return user

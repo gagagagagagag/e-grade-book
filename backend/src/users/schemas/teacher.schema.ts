@@ -2,10 +2,10 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose'
 import { Types } from 'mongoose'
 
 import { StudentUser } from './student.schema'
-import { User, UserRoles } from './user.schema'
+import { UserBase, UserRoles } from './user.schema'
 
 @Schema()
-export class TeacherUser extends User {
+export class TeacherUser extends UserBase {
   role: UserRoles.Teacher
 
   @Prop({ type: Types.ObjectId, ref: 'StudentUser' })

@@ -1,9 +1,9 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose'
 
-import { User, UserRoles } from './user.schema'
+import { User, UserBase, UserRoles } from './user.schema'
 
 @Schema()
-export class AdminUser extends User {
+export class AdminUser extends UserBase {
   role: UserRoles.Admin
 }
 

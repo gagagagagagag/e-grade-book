@@ -12,16 +12,26 @@ export enum UserRoles {
   Parent = 'parent',
 }
 
+export abstract class UserBase extends BaseSchema {
+  email: string
+
+  passwordInitiated: boolean
+
+  password?: string
+
+  role: UserRoles
+}
+
 @Schema({ discriminatorKey: 'role' })
-export class User extends BaseSchema {
+export class User extends UserBase {
   @Prop({ unique: true })
   email: string
 
   @Prop({ default: false })
-  passwordInitialized: boolean
+  passwordInitiated: boolean
 
-  @Prop({ select: false, default: null })
-  password: string | null
+  @Prop({ required: false, select: false })
+  password?: string
 
   @Prop({ enum: UserRoles, required: true })
   role: UserRoles

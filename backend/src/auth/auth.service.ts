@@ -19,7 +19,7 @@ export class AuthService {
   async validateUser(email: string, password: string) {
     const user = await this.usersService.findOneByEmail(email, '+password')
 
-    if (!user || !user.passwordInitialized || !user.password) {
+    if (!user || !user.passwordInitiated || !user.password) {
       return null
     }
 
@@ -93,8 +93,11 @@ export class AuthService {
     const payload = await this.tokenService.verifyInitiatePasswordToken(token)
 
     await this.usersService.update(payload.id, {
-      password: '',
-      passwordInitialized: true,
+      password: await bcrypt.hash(
+        password,
+        +this.configService.getOrThrow<string>('SALT_ROUNDS')
+      ),
+      passwordInitiated: true,
     })
 
     return true
