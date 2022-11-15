@@ -1,14 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { MailerService as _MailerService } from '@nestjs-modules/mailer'
+import { ConfigService } from '@nestjs/config'
+
 import { EmailTemplates, MailerService } from './mailer.service'
 
 describe('MailerService', () => {
+  const fakeConfig = 'test'
   let service: MailerService
   let fakeMailerService: Partial<_MailerService>
+  let fakeConfigService: Partial<ConfigService>
 
   beforeEach(async () => {
     fakeMailerService = {
       sendMail: jest.fn(),
+    }
+    fakeConfigService = {
+      getOrThrow: jest.fn().mockReturnValue(fakeConfig),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -18,37 +25,31 @@ describe('MailerService', () => {
           provide: _MailerService,
           useValue: fakeMailerService,
         },
+        {
+          provide: ConfigService,
+          useValue: fakeConfigService,
+        },
       ],
     }).compile()
 
     service = module.get<MailerService>(MailerService)
   })
 
-  it('should send verification email containing the link to verify the email', async () => {
-    await service.sendVerifyEmailAddress(
-      'test@test.com',
-      'test_token',
-      'server_url'
-    )
-
-    expect(fakeMailerService.sendMail).toHaveBeenCalledTimes(1)
-    expect(fakeMailerService.sendMail).toHaveBeenCalledWith(
-      expect.objectContaining({
-        template: EmailTemplates.VerifyEmail,
-        context: expect.objectContaining({
-          verifyLink: expect.stringContaining('test_token'),
-        }),
-      })
-    )
-  })
-
   it('should send a welcome email', async () => {
-    await service.sendWelcomeEmail('test@test.com')
+    const email = 'test@test.com'
+    const token = 'token'
+
+    await service.sendWelcomeEmail(email, token)
 
     expect(fakeMailerService.sendMail).toHaveBeenCalledTimes(1)
     expect(fakeMailerService.sendMail).toHaveBeenLastCalledWith(
       expect.objectContaining({
+        to: email,
+        subject: 'Welcome!',
         template: EmailTemplates.Welcome,
+        context: {
+          initPassUrl: `${fakeConfig}/initPassword?token=${token}`,
+        },
       })
     )
   })

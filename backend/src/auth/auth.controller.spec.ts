@@ -17,7 +17,7 @@ describe('AuthController', () => {
 
     fakeAuthService = {
       refreshToken: () => Promise.resolve(payload),
-      signup: () => Promise.resolve(true),
+      createUser: () => Promise.resolve(true),
       login: () => Promise.resolve(payload),
       changePassword: () => Promise.resolve(true),
     }

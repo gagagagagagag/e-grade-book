@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { Types } from 'mongoose'
 import * as bcrypt from 'bcrypt'
 
-import { User } from '../users/user.schema'
+import { User, UserRoles } from '../users/schemas'
 import { UsersService } from '../users/users.service'
 import { MailerService } from '../mailer/mailer.service'
 import { AuthService } from './auth.service'
@@ -23,8 +23,9 @@ describe('AuthService', () => {
   const user: User = {
     id: '43hj5b34',
     _id: new Types.ObjectId(),
+    role: UserRoles.Admin,
     email: 'test@test.com',
-    emailVerified: false,
+    passwordInitiated: true,
     password: '34j5h345hj34b5jh43',
   }
 
@@ -33,14 +34,21 @@ describe('AuthService', () => {
       getOrThrow: () => '10',
     }
     fakeMailerService = {
-      sendVerifyEmailAddress: () => Promise.resolve(),
+      sendWelcomeEmail: jest.fn(),
     }
     fakeUsersService = {
-      create: (email, password) =>
-        Promise.resolve({ ...user, email, password }),
+      create: jest
+        .fn()
+        .mockImplementation((email, password) =>
+          Promise.resolve({ ...user, email, password })
+        ),
       findOneByEmail: (email) =>
         Promise.resolve(!email ? null : { ...user, email }),
-      update: (id, attrs) => Promise.resolve({ ...user, id, ...attrs }),
+      update: jest
+        .fn()
+        .mockImplementation((id, attrs) =>
+          Promise.resolve({ ...user, id, ...attrs })
+        ),
     }
     fakeTokenService = {
       signAuthTokens: () =>
@@ -54,7 +62,7 @@ describe('AuthService', () => {
           email: user.email,
           type: TokenTypes.Refresh,
         }),
-      signMailToken: () => Promise.resolve('4jk543hb53j4h'),
+      signInitiatePasswordToken: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -89,72 +97,79 @@ describe('AuthService', () => {
       .mockImplementation((password) => Promise.resolve(password))
   })
 
-  it('should validate the user if password is correct', async () => {
-    const result = await service.validateUser(user.email, user.password)
+  describe('#validateUser', () => {
+    it('should validate the user if password is correct', async () => {
+      const result = await service.validateUser(user.email, user.password!)
 
-    expect(result).not.toBeNull()
-    expect(result?.email).toEqual(user.email)
+      expect(result).not.toBeNull()
+      expect(result?.email).toEqual(user.email)
+    })
+
+    it('should return null if the password is incorrect', async () => {
+      jest
+        .mocked(bcrypt.compare)
+        .mockImplementation(() => Promise.resolve(false))
+
+      const result = await service.validateUser(user.email, user.password!)
+
+      expect(result).toBeNull()
+    })
+
+    it('should return null if the user is not found', async () => {
+      fakeUsersService.findOneByEmail = () => Promise.resolve(null)
+
+      const result = await service.validateUser(user.email, user.password!)
+
+      expect(result).toBeNull()
+    })
   })
 
-  it('should return null if the password is incorrect', async () => {
-    jest.mocked(bcrypt.compare).mockImplementation(() => Promise.resolve(false))
+  describe('#createUser', () => {
+    it('should create a new user', async () => {
+      fakeUsersService.findOneByEmail = () => Promise.resolve(null)
 
-    const result = await service.validateUser(user.email, user.password)
+      const result = await service.createUser(user.email, user.role)
 
-    expect(result).toBeNull()
+      expect(result).toEqual(true)
+      expect(fakeUsersService.create).toHaveBeenCalledTimes(1)
+      expect(fakeMailerService.sendWelcomeEmail).toHaveBeenCalledTimes(1)
+    })
+
+    it('should throw an error if email is already in use', async () => {
+      await expect(service.createUser(user.email, user.role)).rejects.toThrow(
+        BadRequestException
+      )
+    })
   })
 
-  it('should return null if the user is not found', async () => {
-    fakeUsersService.findOneByEmail = () => Promise.resolve(null)
+  describe('#refreshToken', () => {
+    it('should generate new access and refresh token', async () => {
+      const result = await service.refreshToken('token')
 
-    const result = await service.validateUser(user.email, user.password)
-
-    expect(result).toBeNull()
+      expect(result).toHaveProperty('accessToken')
+      expect(result).toHaveProperty('refreshToken')
+    })
   })
 
-  it('should create a new user', async () => {
-    fakeUsersService.findOneByEmail = () => Promise.resolve(null)
-    const createMock = jest.spyOn(fakeUsersService, 'create')
-    const sendVerifyEmailMock = jest.spyOn(
-      fakeMailerService,
-      'sendVerifyEmailAddress'
-    )
+  describe('#changePassword', () => {
+    it('should update the users password and return true', async () => {
+      const result = await service.changePassword(user, '435nkj3n5', 'changed')
 
-    const result = await service.signup(user.email, user.password, 'server_url')
+      expect(result).toEqual(true)
+      expect(fakeUsersService.update).toHaveBeenCalledTimes(1)
+      expect(fakeUsersService.update).toHaveBeenCalledWith(user.id, {
+        password: 'changed',
+      })
+    })
 
-    expect(result).toEqual(true)
-    expect(createMock).toHaveBeenCalledTimes(1)
-    expect(sendVerifyEmailMock).toHaveBeenCalledTimes(1)
-  })
+    it('should throw if old password is incorrect', async () => {
+      jest
+        .mocked(bcrypt.compare)
+        .mockImplementation(() => Promise.resolve(false))
 
-  it('should throw an error if email is already in use', async () => {
-    await expect(
-      service.signup(user.email, user.password, 'server_url')
-    ).rejects.toThrow(BadRequestException)
-  })
-
-  it('should generate new access and refresh token', async () => {
-    const result = await service.refreshToken('token')
-
-    expect(result).toHaveProperty('accessToken')
-    expect(result).toHaveProperty('refreshToken')
-  })
-
-  it('should update the users password and return true', async () => {
-    const updateMock = jest.spyOn(fakeUsersService, 'update')
-
-    const result = await service.changePassword(user, '435nkj3n5', 'changed')
-
-    expect(result).toEqual(true)
-    expect(updateMock).toHaveBeenCalledTimes(1)
-    expect(updateMock).toHaveBeenCalledWith(user.id, { password: 'changed' })
-  })
-
-  it('should throw if old password is incorrect', async () => {
-    jest.mocked(bcrypt.compare).mockImplementation(() => Promise.resolve(false))
-
-    await expect(
-      service.changePassword(user, user.password, 'test')
-    ).rejects.toThrow(BadRequestException)
+      await expect(
+        service.changePassword(user, user.password!, 'test')
+      ).rejects.toThrow(BadRequestException)
+    })
   })
 })
