@@ -25,16 +25,7 @@ import { TokenService } from './token.service'
     }),
   ],
   exports: [TokenService],
-  providers: [
-    AuthService,
-    LocalStrategy,
-    JwtStrategy,
-    TokenService,
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
-  ],
+  providers: [AuthService, LocalStrategy, JwtStrategy, TokenService],
   controllers: [AuthController],
 })
 export class AuthModule {}

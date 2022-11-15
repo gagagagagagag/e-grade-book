@@ -2,7 +2,7 @@ import { IsEmail, IsEnum, NotEquals } from 'class-validator'
 
 import { UserRoles } from '../../users/schemas'
 
-export class SignUpDto {
+export class CreateUserDto {
   @IsEmail()
   email: string
 

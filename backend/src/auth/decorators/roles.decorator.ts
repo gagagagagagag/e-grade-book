@@ -1,9 +1,9 @@
-import { SetMetadata } from '@nestjs/common'
+import { UseGuards } from '@nestjs/common'
 
 import { UserRoles } from '../../users/schemas'
+import { JwtAuthGuard, RolesGuard } from '../guards'
 
-export const ROLES_KEY = 'roles'
-export const Roles = (...roles: UserRoles[]) => SetMetadata(ROLES_KEY, roles)
-
-export const IsAdmin = () => Roles(UserRoles.Admin)
-export const IsTeacher = () => Roles(UserRoles.Admin, UserRoles.Teacher)
+export const IsAdmin = () =>
+  UseGuards(JwtAuthGuard, RolesGuard(UserRoles.Admin))
+export const IsTeacher = () =>
+  UseGuards(JwtAuthGuard, RolesGuard(UserRoles.Admin, UserRoles.Teacher))

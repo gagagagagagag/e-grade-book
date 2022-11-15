@@ -95,6 +95,12 @@ export class TokenService {
         throw new BadRequestException('The supplied token is invalid')
       }
 
+      if (user.passwordInitiated) {
+        throw new BadRequestException(
+          'The password has already been instantiated'
+        )
+      }
+
       return payload
     } catch (e) {
       if (e instanceof TokenExpiredError) {

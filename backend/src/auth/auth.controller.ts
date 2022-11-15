@@ -6,7 +6,7 @@ import { SerializeUser } from '../decorators'
 import { LocalAuthGuard } from './guards'
 import {
   RefreshTokenDto,
-  SignUpDto,
+  CreateUserDto,
   ChangePasswordDto,
   InitiatePasswordDto,
   ChangeEmailDto,
@@ -23,10 +23,9 @@ export class AuthController {
     return this.authService.refreshToken(body.refreshToken)
   }
 
-  @IsAuthenticated()
   @IsAdmin()
   @Post('/createUser')
-  createUser(@Body() body: SignUpDto) {
+  createUser(@Body() body: CreateUserDto) {
     return this.authService.createUser(body.email, body.role)
   }
 
