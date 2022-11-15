@@ -1,0 +1,5 @@
+export * from './user.schema'
+export * from './admin.schema'
+export * from './teacher.schema'
+export * from './student.schema'
+export * from './parent.schema'
