@@ -30,8 +30,23 @@ describe('TeachersService', () => {
     service = module.get<TeachersService>(TeachersService)
   })
 
+  const teacherId = 'teacherId'
+
+  describe('#assignGroup', () => {
+    const groupId = 'groupId'
+
+    it('should throw an error if no object was updated', async () => {
+      fakeTeacherUserModel.updateOne = jest
+        .fn()
+        .mockResolvedValue({ modifiedCount: 0 })
+
+      await expect(
+        service.assignGroup(teacherId, groupId, true)
+      ).rejects.toThrow(BadRequestException)
+    })
+  })
+
   describe('#assignStudent', () => {
-    const teacherId = 'teacherId'
     const studentId = 'studentId'
 
     it('should call updateOne with a correct query on add', async () => {

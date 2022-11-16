@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -7,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
 import { PaginationOptionsDto } from '../dtos'
+import { GroupsService } from '../groups/groups.service'
 import { ParentsService } from './parents.service'
 import {
   AdminUser,
@@ -23,6 +26,8 @@ import { TeachersService } from './teachers.service'
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @Inject(forwardRef(() => GroupsService))
+    private readonly groupsService: GroupsService,
     private readonly teachersService: TeachersService,
     private readonly parentsService: ParentsService
   ) {}
@@ -126,6 +131,25 @@ export class UsersService {
     const count = await this.userModel.countDocuments(query)
 
     return paginationOptions.createResponse(data, count)
+  }
+
+  async assignGroup(teacherId: string, groupId: string, add: boolean) {
+    const group = await this.groupsService.findOneById(groupId)
+
+    if (!group) {
+      throw new NotFoundException('Group not found')
+    }
+
+    const teacher = await this.findUserWithRole<TeacherUser>(
+      teacherId,
+      UserRoles.Teacher
+    )
+
+    if (!teacher) {
+      throw new NotFoundException('Teacher not found')
+    }
+
+    return this.teachersService.assignGroup(teacherId, groupId, add)
   }
 
   async assignStudent(targetId: string, studentId: string, add: boolean) {

@@ -6,10 +6,6 @@ export class UpdateGroupDto {
   name?: string
 
   @IsOptional()
-  @IsMongoId()
-  teacher?: string
-
-  @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
   students?: string[]

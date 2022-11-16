@@ -60,16 +60,6 @@ describe('GroupsService', () => {
     })
   })
 
-  describe('#create', () => {
-    it('should throw if the role check fails', async () => {
-      fakeUsersService.findUserWithRole = jest.fn().mockResolvedValue(null)
-
-      await expect(service.create(name, teacherId)).rejects.toThrow(
-        NotFoundException
-      )
-    })
-  })
-
   describe('#update', () => {
     it('should throw if the group with that id is not found', async () => {
       fakeGroupModel.findByIdAndUpdate = jest.fn().mockResolvedValue(null)
@@ -77,14 +67,6 @@ describe('GroupsService', () => {
       await expect(service.update(id, { name })).rejects.toThrow(
         NotFoundException
       )
-    })
-
-    it('should throw if the teacher is not a teacher', async () => {
-      fakeUsersService.findUserWithRole = jest.fn().mockResolvedValue(null)
-
-      await expect(
-        service.update(id, { name, teacher: teacherId })
-      ).rejects.toThrow(NotFoundException)
     })
 
     it('should check if all students are students if they are provided', async () => {

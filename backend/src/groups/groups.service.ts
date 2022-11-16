@@ -1,13 +1,15 @@
 import { Model } from 'mongoose'
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 
 import { UsersService } from '../users/users.service'
-import { TeacherUser, UserRoles } from '../users/schemas'
+import { UserRoles } from '../users/schemas'
 import { Group, GroupDocument } from './group.schema'
 import { UpdateGroupDto } from './dtos'
 
@@ -15,6 +17,7 @@ import { UpdateGroupDto } from './dtos'
 export class GroupsService {
   constructor(
     @InjectModel(Group.name) private readonly groupModel: Model<GroupDocument>,
+    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService
   ) {}
 
@@ -26,33 +29,13 @@ export class GroupsService {
     return this.groupModel.findById(id).exec()
   }
 
-  async create(name: string, teacherId: string) {
-    const teacher = await this.usersService.findUserWithRole<TeacherUser>(
-      teacherId,
-      UserRoles.Teacher
-    )
-
-    if (!teacher) {
-      throw new NotFoundException('Teacher not found')
-    }
-
-    const group = new this.groupModel({ name, teacher: teacher._id })
+  async create(name: string) {
+    const group = new this.groupModel({ name })
 
     return group.save()
   }
 
   async update(id: string, attrs: UpdateGroupDto) {
-    if (attrs.teacher) {
-      const teacher = await this.usersService.findUserWithRole(
-        attrs.teacher,
-        UserRoles.Teacher
-      )
-
-      if (!teacher) {
-        throw new NotFoundException('Teacher not found')
-      }
-    }
-
     if (attrs.students && attrs.students.length > 0) {
       await this.usersService.assertUsersHaveRole(
         attrs.students,

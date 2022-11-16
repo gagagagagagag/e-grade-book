@@ -1,6 +1,7 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose'
 import { Types, Document } from 'mongoose'
 
+import { Group } from '../../groups/group.schema'
 import { StudentUser } from './student.schema'
 import { UserBase, UserRoles } from './user.schema'
 
@@ -13,8 +14,8 @@ export class TeacherUser extends UserBase {
   @Prop({ type: Types.ObjectId, ref: StudentUser.name })
   students: StudentUser[]
 
-  // @Prop()
-  // groups:
+  @Prop({ type: Types.ObjectId, ref: 'Group' })
+  groups: Group[]
 }
 
 export const TeacherUserSchema = SchemaFactory.createForClass(TeacherUser)

@@ -3,7 +3,7 @@ import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common'
 import { IsAdmin, IsAuthenticated, CurrentUserRole } from '../auth/decorators'
 import { PaginationOptions } from '../decorators'
 import { PaginationOptionsDto } from '../dtos'
-import { AssignStudentDto } from './dtos'
+import { AssignStudentDto, AssignGroupDto } from './dtos'
 import { UserRoles } from './schemas'
 import { UsersService } from './users.service'
 
@@ -24,6 +24,12 @@ export class UsersController {
     @Query('role') role?: UserRoles
   ) {
     return this.usersService.getUsers(paginationOptions, { role })
+  }
+
+  @IsAdmin()
+  @Put('/assignGroup')
+  assignGroup(@Body() body: AssignGroupDto) {
+    return this.usersService.assignGroup(body.teacherId, body.groupId, body.add)
   }
 
   @IsAdmin()

@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { getModelToken } from '@nestjs/mongoose'
 import { Test, TestingModule } from '@nestjs/testing'
 import { Model } from 'mongoose'
+import { GroupsService } from '../groups/groups.service'
 import { generateTestPaginationOptions } from '../utils/stubs/pagination-options.stub'
 import { ParentsService } from './parents.service'
 
@@ -14,6 +15,7 @@ describe('UsersService', () => {
   let fakeUserModel: Partial<Model<UserDocument>>
   let fakeTeachersService: Partial<TeachersService>
   let fakeParentsService: Partial<ParentsService>
+  let fakeGroupsService: Partial<GroupsService>
 
   beforeEach(async () => {
     fakeUserModel = {
@@ -30,6 +32,10 @@ describe('UsersService', () => {
     }
     fakeTeachersService = {
       assignStudent: jest.fn(),
+      assignGroup: jest.fn(),
+    }
+    fakeGroupsService = {
+      findOneById: jest.fn().mockResolvedValue(true),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -38,6 +44,10 @@ describe('UsersService', () => {
         {
           provide: getModelToken(User.name),
           useValue: fakeUserModel,
+        },
+        {
+          provide: GroupsService,
+          useValue: fakeGroupsService,
         },
         {
           provide: TeachersService,
@@ -222,6 +232,39 @@ describe('UsersService', () => {
       expect(paginationOptions.createResponse).toHaveBeenCalledWith(
         data,
         data.length
+      )
+    })
+  })
+
+  describe('#assignGroup', () => {
+    const groupId = 'groupId'
+    const teacherId = 'teacherId'
+
+    it('should throw if group not found', async () => {
+      fakeGroupsService.findOneById = jest.fn().mockResolvedValue(null)
+
+      await expect(
+        service.assignGroup(teacherId, groupId, true)
+      ).rejects.toThrow(NotFoundException)
+    })
+
+    it('should throw if teacher not found', async () => {
+      jest.spyOn(service, 'findUserWithRole').mockResolvedValue(null)
+
+      await expect(
+        service.assignGroup(teacherId, groupId, true)
+      ).rejects.toThrow(NotFoundException)
+    })
+
+    it('should call teacher assign group if group and teacher present', async () => {
+      jest.spyOn(service, 'findUserWithRole').mockResolvedValue(true as any)
+
+      await service.assignGroup(teacherId, groupId, true)
+
+      expect(fakeTeachersService.assignGroup).toHaveBeenCalledWith(
+        teacherId,
+        groupId,
+        true
       )
     })
   })
