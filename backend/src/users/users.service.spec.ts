@@ -1,22 +1,35 @@
-import { NotFoundException } from '@nestjs/common'
+import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { getModelToken } from '@nestjs/mongoose'
 import { Test, TestingModule } from '@nestjs/testing'
 import { Model } from 'mongoose'
+import { generateTestPaginationOptions } from '../utils/stubs/pagination-options.stub'
+import { ParentsService } from './parents.service'
 
-import { User, UserDocument } from './schemas'
+import { User, UserDocument, UserRoles } from './schemas'
+import { TeachersService } from './teachers.service'
 import { UsersService } from './users.service'
 
 describe('UsersService', () => {
   let service: UsersService
   let fakeUserModel: Partial<Model<UserDocument>>
+  let fakeTeachersService: Partial<TeachersService>
+  let fakeParentsService: Partial<ParentsService>
 
   beforeEach(async () => {
     fakeUserModel = {
+      countDocuments: jest.fn(),
+      find: jest.fn(),
       findOne: jest.fn().mockReturnValue({ exec: () => {} }),
       findById: jest.fn().mockReturnValue({ exec: () => {} }),
       findByIdAndUpdate: jest
         .fn()
         .mockImplementation((id, update) => ({ id, ...update })),
+    }
+    fakeParentsService = {
+      assignStudent: jest.fn(),
+    }
+    fakeTeachersService = {
+      assignStudent: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -25,6 +38,14 @@ describe('UsersService', () => {
         {
           provide: getModelToken(User.name),
           useValue: fakeUserModel,
+        },
+        {
+          provide: TeachersService,
+          useValue: fakeTeachersService,
+        },
+        {
+          provide: ParentsService,
+          useValue: fakeParentsService,
         },
       ],
     }).compile()
@@ -103,6 +124,132 @@ describe('UsersService', () => {
         expect.objectContaining({ email }),
         ''
       )
+    })
+  })
+
+  describe('#getUsers', () => {
+    const data = ['test']
+
+    it('should attach role filter if present', async () => {
+      const paginationOptions = generateTestPaginationOptions()
+
+      await service.getUsers(paginationOptions, {
+        role: UserRoles.Student,
+      })
+
+      expect(fakeUserModel.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          role: { $eq: UserRoles.Student },
+        }),
+        null,
+        expect.anything()
+      )
+    })
+
+    it('should call pagination options with data and count', async () => {
+      fakeUserModel.find = jest.fn().mockResolvedValue(data)
+      fakeUserModel.countDocuments = jest.fn().mockResolvedValue(data.length)
+      const paginationOptions = generateTestPaginationOptions()
+      paginationOptions.createResponse = jest.fn()
+
+      await service.getUsers(paginationOptions, {})
+
+      expect(paginationOptions.createResponse).toHaveBeenCalledWith(
+        data,
+        data.length
+      )
+    })
+  })
+
+  describe('#assignStudent', () => {
+    const studentId = 'studentId'
+    const targetId = 'targetId'
+
+    describe('target -> teacher', () => {
+      beforeEach(() => {
+        jest.spyOn(service, 'findOneById').mockImplementation((id) =>
+          Promise.resolve({
+            id,
+            role: id === studentId ? UserRoles.Student : UserRoles.Teacher,
+          } as unknown as User)
+        )
+      })
+
+      it('should call the teacher service', async () => {
+        await service.assignStudent(targetId, studentId, true)
+
+        expect(fakeTeachersService.assignStudent).toHaveBeenCalled()
+        expect(fakeParentsService.assignStudent).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('target -> parent', () => {
+      beforeEach(() => {
+        jest.spyOn(service, 'findOneById').mockImplementation((id) =>
+          Promise.resolve({
+            id,
+            role: id === studentId ? UserRoles.Student : UserRoles.Parent,
+          } as unknown as User)
+        )
+      })
+
+      it('should call the parent service', async () => {
+        await service.assignStudent(targetId, studentId, true)
+
+        expect(fakeParentsService.assignStudent).toHaveBeenCalled()
+        expect(fakeTeachersService.assignStudent).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('errors', () => {
+      it('should throw an error if the student is not found', async () => {
+        jest.spyOn(service, 'findOneById').mockResolvedValue(null)
+
+        await expect(
+          service.assignStudent(targetId, studentId, true)
+        ).rejects.toThrow(NotFoundException)
+      })
+
+      it('should throw an error if the student is not a student', async () => {
+        jest
+          .spyOn(service, 'findOneById')
+          .mockImplementation((id) =>
+            Promise.resolve({ id, role: UserRoles.Teacher } as unknown as User)
+          )
+
+        await expect(
+          service.assignStudent(targetId, studentId, true)
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if target is not found', async () => {
+        jest
+          .spyOn(service, 'findOneById')
+          .mockImplementation((id) =>
+            Promise.resolve(
+              id === targetId
+                ? null
+                : ({ id, role: UserRoles.Student } as unknown as User)
+            )
+          )
+
+        await expect(
+          service.assignStudent(targetId, studentId, true)
+        ).rejects.toThrow(NotFoundException)
+      })
+
+      it('should throw if the target is neither a teacher nor a parent', async () => {
+        jest.spyOn(service, 'findOneById').mockImplementation((id) =>
+          Promise.resolve({
+            id,
+            role: id === studentId ? UserRoles.Student : UserRoles.Admin,
+          } as unknown as User)
+        )
+
+        await expect(
+          service.assignStudent(targetId, studentId, true)
+        ).rejects.toThrow(BadRequestException)
+      })
     })
   })
 })
