@@ -17,6 +17,4 @@ export class TeacherUser extends UserBase {
   // groups:
 }
 
-console.log('DSDS', TeacherUser.name)
-
 export const TeacherUserSchema = SchemaFactory.createForClass(TeacherUser)
