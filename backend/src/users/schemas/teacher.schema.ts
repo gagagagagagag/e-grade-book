@@ -10,7 +10,7 @@ export type TeacherUserDocument = TeacherUser & Document
 export class TeacherUser extends UserBase {
   role: UserRoles.Teacher
 
-  @Prop({ type: Types.ObjectId, ref: 'StudentUser' })
+  @Prop({ type: Types.ObjectId, ref: StudentUser.name })
   students: StudentUser[]
 
   // @Prop()

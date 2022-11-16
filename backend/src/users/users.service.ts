@@ -8,7 +8,15 @@ import { Model } from 'mongoose'
 
 import { PaginationOptionsDto } from '../dtos'
 import { ParentsService } from './parents.service'
-import { User, UserDocument, UserRoles } from './schemas'
+import {
+  AdminUser,
+  ParentUser,
+  StudentUser,
+  TeacherUser,
+  User,
+  UserDocument,
+  UserRoles,
+} from './schemas'
 import { TeachersService } from './teachers.service'
 
 @Injectable()
@@ -56,11 +64,42 @@ export class UsersService {
     return this.userModel.findOne({ email }, selection).exec()
   }
 
-  async getUser(id: string, userRole: UserRoles) {
+  async findUserWithRole<
+    T extends AdminUser | TeacherUser | ParentUser | StudentUser
+  >(id: string | null, role: UserRoles) {
+    const user = await this.userModel.findOne({ _id: id, role }).exec()
+
+    if (!user) {
+      return null
+    }
+
+    return user as unknown as T
+  }
+
+  async countUsersWithRole(userIds: string[], role: UserRoles) {
+    if (userIds.length === 0) {
+      return 0
+    }
+
+    return this.userModel.countDocuments({
+      role: { $eq: role },
+      _id: { $in: userIds },
+    })
+  }
+
+  async assertUsersHaveRole(userIds: string[], role: UserRoles) {
+    const count = await this.countUsersWithRole(userIds, role)
+
+    if (count !== userIds.length) {
+      throw new BadRequestException(`All users have to be of type ${role}`)
+    }
+  }
+
+  async getUser(id: string, currentUserRole: UserRoles) {
     // check what type the requested user is
     // check if the current user can request this user
     // return data that this user is allowed to see
-    console.log(id, userRole)
+    console.log(id, currentUserRole)
   }
 
   async getUsers(
@@ -90,14 +129,13 @@ export class UsersService {
   }
 
   async assignStudent(targetId: string, studentId: string, add: boolean) {
-    const student = await this.findOneById(studentId)
+    const student = await this.findUserWithRole<StudentUser>(
+      studentId,
+      UserRoles.Student
+    )
 
     if (!student) {
       throw new NotFoundException('Student not found')
-    }
-
-    if (student.role !== UserRoles.Student) {
-      throw new BadRequestException('studentId is not a student')
     }
 
     const target = await this.findOneById(targetId)

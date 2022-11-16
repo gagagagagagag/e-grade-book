@@ -127,6 +127,71 @@ describe('UsersService', () => {
     })
   })
 
+  describe('#findUserWithRole', () => {
+    it('should return null if user is not found', async () => {
+      fakeUserModel.findOne = jest
+        .fn()
+        .mockReturnValue({ exec: () => Promise.resolve(null) })
+
+      const result = await service.findUserWithRole(id, UserRoles.Student)
+
+      expect(result).toBeNull()
+    })
+
+    it('should call findOne with the desired role', async () => {
+      fakeUserModel.findOne = jest
+        .fn()
+        .mockReturnValue({ exec: () => Promise.resolve(null) })
+
+      await service.findUserWithRole(id, UserRoles.Student)
+
+      expect(fakeUserModel.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          role: UserRoles.Student,
+        })
+      )
+    })
+  })
+
+  describe('#countUsersWithRole', () => {
+    it('should not call the database if array length is empty', async () => {
+      const result = await service.countUsersWithRole([], UserRoles.Student)
+
+      expect(result).toBe(0)
+      expect(fakeUserModel.countDocuments).not.toHaveBeenCalled()
+    })
+
+    it('should return the documents count, with selected role', async () => {
+      await service.countUsersWithRole([id], UserRoles.Student)
+
+      expect(fakeUserModel.countDocuments).toHaveBeenCalled()
+      expect(fakeUserModel.countDocuments).toHaveBeenCalledWith(
+        expect.objectContaining({
+          role: { $eq: UserRoles.Student },
+        })
+      )
+    })
+  })
+
+  describe('#assertUsersHaveRole', () => {
+    beforeEach(() => {
+      jest.spyOn(service, 'countUsersWithRole').mockResolvedValue(1)
+    })
+
+    it('should not throw if values are equal', async () => {
+      await service.assertUsersHaveRole(['test_user'], UserRoles.Student)
+    })
+
+    it('should throw if values differ', async () => {
+      await expect(
+        service.assertUsersHaveRole(
+          ['test_user', 'test_user2'],
+          UserRoles.Student
+        )
+      ).rejects.toThrow(BadRequestException)
+    })
+  })
+
   describe('#getUsers', () => {
     const data = ['test']
 
@@ -167,6 +232,9 @@ describe('UsersService', () => {
 
     describe('target -> teacher', () => {
       beforeEach(() => {
+        jest
+          .spyOn(service, 'findUserWithRole')
+          .mockReturnValue({ id: studentId } as any)
         jest.spyOn(service, 'findOneById').mockImplementation((id) =>
           Promise.resolve({
             id,
@@ -185,6 +253,9 @@ describe('UsersService', () => {
 
     describe('target -> parent', () => {
       beforeEach(() => {
+        jest
+          .spyOn(service, 'findUserWithRole')
+          .mockReturnValue({ id: studentId } as any)
         jest.spyOn(service, 'findOneById').mockImplementation((id) =>
           Promise.resolve({
             id,
@@ -202,24 +273,12 @@ describe('UsersService', () => {
     })
 
     describe('errors', () => {
-      it('should throw an error if the student is not found', async () => {
-        jest.spyOn(service, 'findOneById').mockResolvedValue(null)
+      it('should throw an error if the student is not a student', async () => {
+        jest.spyOn(service, 'findUserWithRole').mockResolvedValue(null)
 
         await expect(
           service.assignStudent(targetId, studentId, true)
         ).rejects.toThrow(NotFoundException)
-      })
-
-      it('should throw an error if the student is not a student', async () => {
-        jest
-          .spyOn(service, 'findOneById')
-          .mockImplementation((id) =>
-            Promise.resolve({ id, role: UserRoles.Teacher } as unknown as User)
-          )
-
-        await expect(
-          service.assignStudent(targetId, studentId, true)
-        ).rejects.toThrow(BadRequestException)
       })
 
       it('should throw if target is not found', async () => {
@@ -239,6 +298,9 @@ describe('UsersService', () => {
       })
 
       it('should throw if the target is neither a teacher nor a parent', async () => {
+        jest
+          .spyOn(service, 'findUserWithRole')
+          .mockResolvedValue({ id: studentId } as any)
         jest.spyOn(service, 'findOneById').mockImplementation((id) =>
           Promise.resolve({
             id,
