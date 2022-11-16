@@ -15,6 +15,8 @@ import {
   ParentUser,
   ParentUserSchema,
 } from './schemas'
+import { TeachersService } from './teachers.service';
+import { ParentsService } from './parents.service';
 
 @Module({
   imports: [
@@ -44,7 +46,7 @@ import {
     ]),
   ],
   exports: [UsersService],
-  providers: [UsersService],
+  providers: [UsersService, TeachersService, ParentsService],
   controllers: [UsersController],
 })
 export class UsersModule {}

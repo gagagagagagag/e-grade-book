@@ -4,8 +4,9 @@ import { ConfigService } from '@nestjs/config'
 
 import { MailerService } from '../mailer/mailer.service'
 import { UsersService } from '../users/users.service'
-import { User, UserRoles } from '../users/schemas'
+import { User } from '../users/schemas'
 import { TokenService } from './token.service'
+import { CreateUserDto } from './dtos'
 
 @Injectable()
 export class AuthService {
@@ -34,14 +35,18 @@ export class AuthService {
     return this.tokenService.signAuthTokens(user.id, user.email)
   }
 
-  async createUser(email: string, role: UserRoles) {
-    const existingUser = await this.usersService.findOneByEmail(email)
+  async createUser(data: CreateUserDto) {
+    const existingUser = await this.usersService.findOneByEmail(data.email)
 
     if (existingUser) {
       throw new BadRequestException('Email already in use')
     }
 
-    const createdUser = await this.usersService.create(email, role)
+    const createdUser = await this.usersService.create(
+      data.name,
+      data.email,
+      data.role
+    )
 
     await this.mailerService.sendWelcomeEmail(
       createdUser.email,
@@ -60,7 +65,7 @@ export class AuthService {
     return this.tokenService.signAuthTokens(payload.id, payload.email)
   }
 
-  async changeEmail(user: User, newEmail: string, serverUrl: string) {
+  async changeEmail(user: User, newEmail: string) {
     const existingUser = await this.usersService.findOneByEmail(newEmail)
 
     if (existingUser) {

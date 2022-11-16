@@ -4,6 +4,8 @@ import { Types } from 'mongoose'
 import { StudentUser } from './student.schema'
 import { UserBase, UserRoles } from './user.schema'
 
+export type TeacherUserDocument = TeacherUser & Document
+
 @Schema()
 export class TeacherUser extends UserBase {
   role: UserRoles.Teacher
@@ -14,5 +16,7 @@ export class TeacherUser extends UserBase {
   // @Prop()
   // groups:
 }
+
+console.log('DSDS', TeacherUser.name)
 
 export const TeacherUserSchema = SchemaFactory.createForClass(TeacherUser)

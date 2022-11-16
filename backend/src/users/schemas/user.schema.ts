@@ -6,13 +6,15 @@ import { BaseSchema } from '../../utils/base.schema'
 export type UserDocument = User & Document
 
 export enum UserRoles {
-  Admin = 'admin',
-  Teacher = 'teacher',
-  Student = 'student',
-  Parent = 'parent',
+  Admin = 'AdminUser',
+  Teacher = 'TeacherUser',
+  Student = 'StudentUser',
+  Parent = 'ParentUser',
 }
 
 export abstract class UserBase extends BaseSchema {
+  name: string
+
   email: string
 
   passwordInitiated: boolean
@@ -24,6 +26,9 @@ export abstract class UserBase extends BaseSchema {
 
 @Schema({ discriminatorKey: 'role' })
 export class User extends UserBase {
+  @Prop({ required: true, index: 'text' })
+  name: string
+
   @Prop({ unique: true })
   email: string
 

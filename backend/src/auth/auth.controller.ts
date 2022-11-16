@@ -1,6 +1,5 @@
 import { Controller, Post, Body, UseGuards, Get, Patch } from '@nestjs/common'
 
-import { ServerUrl } from '../decorators/server-url.decorator'
 import { User } from '../users/schemas'
 import { SerializeUser } from '../decorators'
 import { LocalAuthGuard } from './guards'
@@ -26,7 +25,7 @@ export class AuthController {
   @IsAdmin()
   @Post('/createUser')
   createUser(@Body() body: CreateUserDto) {
-    return this.authService.createUser(body.email, body.role)
+    return this.authService.createUser(body)
   }
 
   @UseGuards(LocalAuthGuard)
@@ -44,12 +43,8 @@ export class AuthController {
 
   @IsAuthenticated()
   @Patch('/changeEmail')
-  changeEmail(
-    @CurrentUser() currentUser: User,
-    @Body() body: ChangeEmailDto,
-    @ServerUrl() serverUrl: string
-  ) {
-    return this.authService.changeEmail(currentUser, body.newEmail, serverUrl)
+  changeEmail(@CurrentUser() currentUser: User, @Body() body: ChangeEmailDto) {
+    return this.authService.changeEmail(currentUser, body.newEmail)
   }
 
   @IsAuthenticated()
@@ -66,7 +61,7 @@ export class AuthController {
   }
 
   @Post('/initiatePassword')
-  verifyEmail(@Body() body: InitiatePasswordDto) {
+  initiatePassword(@Body() body: InitiatePasswordDto) {
     return this.authService.initiatePassword(body.token, body.password)
   }
 }
