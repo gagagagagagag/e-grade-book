@@ -15,8 +15,8 @@ import {
   ParentUser,
   ParentUserSchema,
 } from './schemas'
-import { TeachersService } from './teachers.service';
-import { ParentsService } from './parents.service';
+import { TeachersService } from './teachers.service'
+import { ParentsService } from './parents.service'
 
 @Module({
   imports: [

@@ -23,6 +23,7 @@ describe('AuthService', () => {
   const user: User = {
     id: '43hj5b34',
     _id: new Types.ObjectId(),
+    name: 'test name',
     role: UserRoles.Admin,
     email: 'test@test.com',
     passwordInitiated: true,
@@ -128,7 +129,11 @@ describe('AuthService', () => {
     it('should create a new user', async () => {
       fakeUsersService.findOneByEmail = () => Promise.resolve(null)
 
-      const result = await service.createUser(user.email, user.role)
+      const result = await service.createUser({
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      })
 
       expect(result).toEqual(true)
       expect(fakeUsersService.create).toHaveBeenCalledTimes(1)
@@ -136,9 +141,13 @@ describe('AuthService', () => {
     })
 
     it('should throw an error if email is already in use', async () => {
-      await expect(service.createUser(user.email, user.role)).rejects.toThrow(
-        BadRequestException
-      )
+      await expect(
+        service.createUser({
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        })
+      ).rejects.toThrow(BadRequestException)
     })
   })
 

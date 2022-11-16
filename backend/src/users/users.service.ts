@@ -47,7 +47,7 @@ export class UsersService {
 
   async findOneByEmail(
     email: string | null,
-    selection: string = ''
+    selection = ''
   ): Promise<User | null> {
     if (!email) {
       return null
@@ -60,6 +60,7 @@ export class UsersService {
     // check what type the requested user is
     // check if the current user can request this user
     // return data that this user is allowed to see
+    console.log(id, userRole)
   }
 
   async getUsers(

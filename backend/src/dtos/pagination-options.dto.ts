@@ -13,14 +13,14 @@ export class PaginationOptionsDto {
   @IsOptional()
   @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 0 })
   @Min(1)
-  page: number = 1
+  page = 1
 
   @Expose()
   @IsOptional()
   @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 0 })
   @Min(1)
   @Max(100)
-  perPage: number = 10
+  perPage = 10
 
   @Expose()
   @IsOptional()
