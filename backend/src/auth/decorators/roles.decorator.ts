@@ -7,7 +7,7 @@ import {
 import { UserRoles } from '../../users/schemas'
 import { JwtAuthGuard, RolesGuard } from '../guards'
 
-export const UserRole = createParamDecorator(
+export const CurrentUserRole = createParamDecorator(
   (_: never, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest()
 
