@@ -2,13 +2,13 @@ import { Injectable, BadRequestException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
-import { TeacherUser, TeacherUserDocument } from './schemas'
+import { ParentUser, ParentUserDocument } from './schemas'
 
 @Injectable()
 export class ParentsService {
   constructor(
-    @InjectModel(TeacherUser.name)
-    private readonly parentUserModel: Model<TeacherUserDocument>
+    @InjectModel(ParentUser.name)
+    private readonly parentUserModel: Model<ParentUserDocument>
   ) {}
 
   async assignStudent(parentId: string, studentId: string, add: boolean) {
