@@ -31,9 +31,11 @@ export class LessonsController {
     return this.lessonsService.update(id, body, currentUser)
   }
 
-  @IsAdmin()
-  @Delete()
-  deleteLesson() {}
+  @IsTeacher()
+  @Delete('/:id')
+  deleteLesson(@Param('id') id: string, @CurrentUser() currentUser: User) {
+    return this.lessonsService.delete(id, currentUser)
+  }
 
   @IsTeacher()
   @Get('/exportLessons')

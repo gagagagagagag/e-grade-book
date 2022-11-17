@@ -24,6 +24,7 @@ describe('LessonsService', () => {
     fakeLessonModel = {
       create: jest.fn(),
       findByIdAndUpdate: jest.fn(),
+      findByIdAndDelete: jest.fn().mockResolvedValue(true),
     }
     fakeGroupsService = {
       assertGroupContains: jest.fn(),
@@ -226,6 +227,46 @@ describe('LessonsService', () => {
           { role: UserRoles.Admin } as any
         )
       ).rejects.toThrow(BadRequestException)
+    })
+  })
+
+  describe('#delete', () => {
+    const mockedAssert = jest.fn()
+    beforeEach(() => {
+      mockedAssert.mockReset()
+      jest
+        .spyOn(service, 'assertLessonCreatedByTeacher')
+        .mockImplementation(mockedAssert)
+    })
+
+    it('should check if the teacher is allowed to delete', async () => {
+      await service.delete(lessonId, { role: UserRoles.Teacher } as any)
+
+      expect(mockedAssert).toHaveBeenCalled()
+    })
+
+    it('should not check ownership for admin', async () => {
+      await service.delete(lessonId, { role: UserRoles.Admin } as any)
+
+      expect(mockedAssert).not.toBeCalled()
+    })
+
+    it('should throw if lesson not found', async () => {
+      fakeLessonModel.findByIdAndDelete = jest.fn().mockResolvedValue(null)
+
+      await expect(
+        service.delete(lessonId, { role: UserRoles.Admin } as any)
+      ).rejects.toThrow(NotFoundException)
+    })
+
+    it('should return the deleted lesson', async () => {
+      fakeLessonModel.findByIdAndDelete = jest.fn().mockResolvedValue('result')
+
+      const result = await service.delete(lessonId, {
+        role: UserRoles.Admin,
+      } as any)
+
+      expect(result).toBe('result')
     })
   })
 

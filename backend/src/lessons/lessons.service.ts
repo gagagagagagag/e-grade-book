@@ -103,6 +103,20 @@ export class LessonsService {
     return this.lessonModel.findByIdAndUpdate(id, attrs, { new: true })
   }
 
+  async delete(id: string, currentUser: User) {
+    if (currentUser.role === UserRoles.Teacher) {
+      await this.assertLessonCreatedByTeacher(id, currentUser.id)
+    }
+
+    const result = await this.lessonModel.findByIdAndDelete(id)
+
+    if (!result) {
+      throw new NotFoundException('Lesson not found')
+    }
+
+    return result
+  }
+
   async findOneById(id: string | null) {
     if (!id) {
       return null
