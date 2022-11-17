@@ -12,6 +12,7 @@ describe('TeachersService', () => {
 
   beforeEach(async () => {
     fakeTeacherUserModel = {
+      findOne: jest.fn().mockResolvedValue(null),
       updateOne: jest.fn().mockResolvedValue({
         modifiedCount: 1,
       }),
@@ -31,10 +32,26 @@ describe('TeachersService', () => {
   })
 
   const teacherId = 'teacherId'
+  const groupId = 'groupId'
+  const studentId = 'studentId'
+
+  describe('#assertGroupAssignedToTeacher', () => {
+    it('should throw if teacher not found', async () => {
+      await expect(
+        service.assertGroupAssignedToTeacher(teacherId, studentId)
+      ).rejects.toThrow(BadRequestException)
+    })
+  })
+
+  describe('#assertUserAssignedToTeacher', () => {
+    it('should throw if teacher not found', async () => {
+      await expect(
+        service.assertUserAssignedToTeacher(teacherId, studentId)
+      ).rejects.toThrow(BadRequestException)
+    })
+  })
 
   describe('#assignGroup', () => {
-    const groupId = 'groupId'
-
     it('should throw an error if no object was updated', async () => {
       fakeTeacherUserModel.updateOne = jest
         .fn()
@@ -47,8 +64,6 @@ describe('TeachersService', () => {
   })
 
   describe('#assignStudent', () => {
-    const studentId = 'studentId'
-
     it('should call updateOne with a correct query on add', async () => {
       await service.assignStudent(teacherId, studentId, true)
 

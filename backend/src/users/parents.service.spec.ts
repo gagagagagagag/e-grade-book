@@ -12,6 +12,7 @@ describe('ParentsService', () => {
 
   beforeEach(async () => {
     fakeParentUserModel = {
+      findOne: jest.fn().mockResolvedValue(null),
       updateOne: jest.fn().mockResolvedValue({
         modifiedCount: 1,
       }),
@@ -29,11 +30,18 @@ describe('ParentsService', () => {
 
     service = module.get<ParentsService>(ParentsService)
   })
+  const parentId = 'parentId'
+  const studentId = 'studentId'
+
+  describe('#assertUserAssignedToParent', () => {
+    it('should throw if parent not found', async () => {
+      await expect(
+        service.assertUserAssignedToParent(parentId, studentId)
+      ).rejects.toThrow(BadRequestException)
+    })
+  })
 
   describe('#assignStudent', () => {
-    const parentId = 'parentId'
-    const studentId = 'studentId'
-
     it('should call updateOne with a correct query on add', async () => {
       await service.assignStudent(parentId, studentId, true)
 

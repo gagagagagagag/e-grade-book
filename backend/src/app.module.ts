@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module'
 import { AuthModule } from './auth/auth.module'
 import { MailerModule } from './mailer/mailer.module'
 import { GroupsModule } from './groups/groups.module'
+import { LessonsModule } from './lessons/lessons.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { GroupsModule } from './groups/groups.module'
     AuthModule,
     MailerModule,
     GroupsModule,
+    LessonsModule,
   ],
   controllers: [AppController],
   providers: [

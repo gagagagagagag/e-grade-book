@@ -17,5 +17,10 @@ export const CurrentUserRole = createParamDecorator(
 
 export const IsAdmin = () =>
   UseGuards(JwtAuthGuard, RolesGuard(UserRoles.Admin))
-export const IsTeacher = () =>
-  UseGuards(JwtAuthGuard, RolesGuard(UserRoles.Admin, UserRoles.Teacher))
+export const IsTeacher = (allowAdmin = true) =>
+  UseGuards(
+    JwtAuthGuard,
+    allowAdmin
+      ? RolesGuard(UserRoles.Admin, UserRoles.Teacher)
+      : RolesGuard(UserRoles.Teacher)
+  )

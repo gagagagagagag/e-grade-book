@@ -64,6 +64,17 @@ export class GroupsService {
     return result
   }
 
+  async assertGroupContains(groupId: string, studentIds: string[]) {
+    const group = await this.groupModel.findOne({
+      _id: groupId,
+      students: { $all: studentIds },
+    })
+
+    if (!group) {
+      throw new NotFoundException('Group does not contain the provided users')
+    }
+  }
+
   async assignStudent(groupId: string, studentId: string, add: boolean) {
     const student = await this.usersService.findUserWithRole(
       studentId,

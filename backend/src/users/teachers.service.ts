@@ -11,6 +11,28 @@ export class TeachersService {
     private readonly teacherUserModel: Model<TeacherUserDocument>
   ) {}
 
+  async assertGroupAssignedToTeacher(teacherId: string, groupId: string) {
+    const teacher = await this.teacherUserModel.findOne({
+      _id: teacherId,
+      groups: { $eq: groupId },
+    })
+
+    if (!teacher) {
+      throw new BadRequestException('Group is not assigned to teacher')
+    }
+  }
+
+  async assertUserAssignedToTeacher(teacherId: string, userId: string) {
+    const teacher = await this.teacherUserModel.findOne({
+      _id: teacherId,
+      students: { $eq: userId },
+    })
+
+    if (!teacher) {
+      throw new BadRequestException('Student is not assigned to teacher')
+    }
+  }
+
   async assignGroup(teacherId: string, groupId: string, add: boolean) {
     const result = await this.teacherUserModel.updateOne(
       {

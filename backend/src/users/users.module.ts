@@ -22,7 +22,6 @@ import { GroupsModule } from '../groups/groups.module'
 @Module({
   imports: [
     forwardRef(() => GroupsModule),
-    // GroupsModule,
     MongooseModule.forFeature([
       {
         name: User.name,

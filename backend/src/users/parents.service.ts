@@ -11,6 +11,17 @@ export class ParentsService {
     private readonly parentUserModel: Model<ParentUserDocument>
   ) {}
 
+  async assertUserAssignedToParent(parentId: string, userId: string) {
+    const parent = await this.parentUserModel.findOne({
+      _id: parentId,
+      students: { $eq: userId },
+    })
+
+    if (!parent) {
+      throw new BadRequestException('Student is not assigned to parent')
+    }
+  }
+
   async assignStudent(parentId: string, studentId: string, add: boolean) {
     const result = await this.parentUserModel.updateOne(
       { id: parentId, students: add ? { $ne: studentId } : { $eq: studentId } },

@@ -29,8 +29,11 @@ describe('UsersService', () => {
     }
     fakeParentsService = {
       assignStudent: jest.fn(),
+      assertUserAssignedToParent: jest.fn(),
     }
     fakeTeachersService = {
+      assertGroupAssignedToTeacher: jest.fn(),
+      assertUserAssignedToTeacher: jest.fn(),
       assignStudent: jest.fn(),
       assignGroup: jest.fn(),
     }
@@ -63,6 +66,9 @@ describe('UsersService', () => {
     service = module.get<UsersService>(UsersService)
   })
   const id = 'test-id'
+  const groupId = 'groupId'
+  const teacherId = 'teacherId'
+  const parentId = 'parentId'
   const email = 'test@test.com'
 
   describe('#update', () => {
@@ -198,6 +204,78 @@ describe('UsersService', () => {
           ['test_user', 'test_user2'],
           UserRoles.Student
         )
+      ).rejects.toThrow(BadRequestException)
+    })
+  })
+
+  describe('#assertGroupAssignedToUser', () => {
+    it('should throw if teacher not found', async () => {
+      jest.spyOn(service, 'findUserWithRole').mockResolvedValue(null)
+
+      await expect(
+        service.assertGroupAssignedToUser(id, groupId)
+      ).rejects.toThrow(NotFoundException)
+    })
+
+    it('should call the teachers service', async () => {
+      jest.spyOn(service, 'findUserWithRole').mockResolvedValue(true as any)
+
+      await service.assertGroupAssignedToUser(id, groupId)
+
+      expect(
+        fakeTeachersService.assertGroupAssignedToTeacher
+      ).toHaveBeenCalled()
+    })
+  })
+
+  describe('#assertUserAssignedToUser', () => {
+    beforeEach(() => {
+      jest.spyOn(service, 'findUserWithRole').mockResolvedValue(true as any)
+    })
+
+    it('should throw an error if user not found', async () => {
+      jest.spyOn(service, 'findUserWithRole').mockResolvedValue(null)
+
+      await expect(
+        service.assertUserAssignedToUser(teacherId, id)
+      ).rejects.toThrow(NotFoundException)
+    })
+
+    it('should throw if target is not found', async () => {
+      jest.spyOn(service, 'findOneById').mockResolvedValue(null)
+
+      await expect(
+        service.assertUserAssignedToUser(teacherId, id)
+      ).rejects.toThrow(NotFoundException)
+    })
+
+    it('should call the teacher service if role is teacher', async () => {
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValue({ role: UserRoles.Teacher } as any)
+
+      await service.assertUserAssignedToUser(teacherId, id)
+
+      expect(fakeTeachersService.assertUserAssignedToTeacher).toHaveBeenCalled()
+    })
+
+    it('should call the parent service if role is parent', async () => {
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValue({ role: UserRoles.Parent } as any)
+
+      await service.assertUserAssignedToUser(parentId, id)
+
+      expect(fakeParentsService.assertUserAssignedToParent).toHaveBeenCalled()
+    })
+
+    it('should throw if the role is neither teacher nor parent', async () => {
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValue({ role: UserRoles.Admin } as any)
+
+      await expect(
+        service.assertUserAssignedToUser(teacherId, id)
       ).rejects.toThrow(BadRequestException)
     })
   })

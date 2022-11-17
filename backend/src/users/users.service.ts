@@ -100,6 +100,45 @@ export class UsersService {
     }
   }
 
+  async assertGroupAssignedToUser(userId: string, groupId: string) {
+    const teacher = await this.findUserWithRole<TeacherUser>(
+      userId,
+      UserRoles.Teacher
+    )
+
+    if (!teacher) {
+      throw new NotFoundException('Teacher not found')
+    }
+
+    await this.teachersService.assertGroupAssignedToTeacher(teacher.id, groupId)
+  }
+
+  async assertUserAssignedToUser(targetId: string, userId: string) {
+    const user = await this.findUserWithRole(userId, UserRoles.Student)
+
+    if (!user) {
+      throw new NotFoundException('User not found')
+    }
+
+    const target = await this.findOneById(targetId)
+
+    if (!target) {
+      throw new NotFoundException('Target not found')
+    }
+
+    switch (target.role) {
+      case UserRoles.Teacher:
+        return this.teachersService.assertUserAssignedToTeacher(
+          targetId,
+          userId
+        )
+      case UserRoles.Parent:
+        return this.parentsService.assertUserAssignedToParent(targetId, userId)
+      default:
+        throw new BadRequestException('Target is not a teacher nor a parent')
+    }
+  }
+
   async getUser(id: string, currentUserRole: UserRoles) {
     // check what type the requested user is
     // check if the current user can request this user
