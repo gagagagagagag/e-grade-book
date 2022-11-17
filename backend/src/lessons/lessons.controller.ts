@@ -1,8 +1,8 @@
-import { Body, Controller, Delete, Get, Post, Put } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
 
 import { CurrentUser, IsAdmin, IsTeacher } from '../auth/decorators'
 import { User } from '../users/schemas'
-import { CreateLessonDto } from './dtos'
+import { CreateLessonDto, UpdateLessonDto } from './dtos'
 import { LessonsService } from './lessons.service'
 
 @Controller('lessons')
@@ -22,8 +22,14 @@ export class LessonsController {
   }
 
   @IsTeacher()
-  @Put()
-  updateLesson() {}
+  @Put('/:id')
+  updateLesson(
+    @Param('id') id: string,
+    @Body() body: UpdateLessonDto,
+    @CurrentUser() currentUser: User
+  ) {
+    return this.lessonsService.update(id, body, currentUser)
+  }
 
   @IsAdmin()
   @Delete()

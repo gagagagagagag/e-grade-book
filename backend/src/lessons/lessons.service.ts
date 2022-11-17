@@ -1,11 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { isEqual } from 'lodash'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
 import { GroupsService } from '../groups/groups.service'
-import { UserRoles } from '../users/schemas'
+import { User, UserRoles } from '../users/schemas'
 import { UsersService } from '../users/users.service'
-import { CreateLessonDto } from './dtos'
+import { CreateLessonDto, UpdateLessonDto } from './dtos'
 import { Lesson, LessonDocument } from './lesson.schema'
 
 @Injectable()
@@ -66,6 +71,55 @@ export class LessonsService {
       throw new BadRequestException(
         'Either students or group has to be provided, but not both'
       )
+    }
+  }
+
+  async update(id: string, attrs: UpdateLessonDto, currentUser: User) {
+    if (currentUser.role === UserRoles.Teacher) {
+      await this.assertLessonCreatedByTeacher(id, currentUser.id)
+    }
+
+    const lesson = await this.findOneById(id)
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found')
+    }
+
+    if (attrs.participants) {
+      const oldParticipants = lesson.participants
+        .map((participant) => participant.student.toString())
+        .sort()
+      const newParticipants = attrs.participants
+        .map((participant) => participant.student.toString())
+        .sort()
+
+      if (!isEqual(oldParticipants, newParticipants)) {
+        throw new BadRequestException(
+          "You can't change the lessons participants"
+        )
+      }
+    }
+
+    return this.lessonModel.findByIdAndUpdate(id, attrs, { new: true })
+  }
+
+  async findOneById(id: string | null) {
+    if (!id) {
+      return null
+    }
+
+    return this.lessonModel.findById(id).lean().exec()
+  }
+
+  async assertLessonCreatedByTeacher(lessonId: string, teacherId: string) {
+    const lesson = await this.findOneById(lessonId)
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found')
+    }
+
+    if (lesson.teacher.toString() !== teacherId) {
+      throw new BadRequestException('Lesson was not created by this teacher')
     }
   }
 }

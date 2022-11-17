@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common'
+import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { getModelToken } from '@nestjs/mongoose'
 import { Test, TestingModule } from '@nestjs/testing'
 import { Model } from 'mongoose'
@@ -23,6 +23,7 @@ describe('LessonsService', () => {
   beforeEach(async () => {
     fakeLessonModel = {
       create: jest.fn(),
+      findByIdAndUpdate: jest.fn(),
     }
     fakeGroupsService = {
       assertGroupContains: jest.fn(),
@@ -54,10 +55,12 @@ describe('LessonsService', () => {
     service = module.get<LessonsService>(LessonsService)
   })
 
+  const lessonId = 'lessonId'
+  const studentId = 'studentId'
+  const teacherId = 'teacherId'
+  const groupId = 'groupId'
+
   describe('#create', () => {
-    const groupId = 'groupId'
-    const studentId = 'studentId'
-    const teacherId = 'teacherId'
     const participants = [
       {
         student: studentId,
@@ -168,6 +171,99 @@ describe('LessonsService', () => {
           })
         ).rejects.toThrow(BadRequestException)
       })
+    })
+  })
+
+  describe('#update', () => {
+    it('should check if the teacher is editing his own lesson', async () => {
+      const mockedAssert = jest.fn()
+      jest
+        .spyOn(service, 'assertLessonCreatedByTeacher')
+        .mockImplementation(mockedAssert)
+      jest.spyOn(service, 'findOneById').mockResolvedValue(true as any)
+
+      await service.update(lessonId, { duration: 10 }, {
+        role: UserRoles.Teacher,
+      } as any)
+
+      expect(mockedAssert).toHaveBeenCalled()
+    })
+
+    it('should not check ownership for admin', async () => {
+      const mockedAssert = jest.fn()
+      jest
+        .spyOn(service, 'assertLessonCreatedByTeacher')
+        .mockImplementation(mockedAssert)
+      jest.spyOn(service, 'findOneById').mockResolvedValue(true as any)
+
+      await service.update(lessonId, { duration: 10 }, {
+        role: UserRoles.Admin,
+      } as any)
+
+      expect(mockedAssert).not.toHaveBeenCalled()
+    })
+
+    it('should throw if the lesson is not found', async () => {
+      jest.spyOn(service, 'assertLessonCreatedByTeacher').mockResolvedValue()
+      jest.spyOn(service, 'findOneById').mockResolvedValue(null)
+
+      await expect(
+        service.update(lessonId, { duration: 10 }, {
+          role: UserRoles.Admin,
+        } as any)
+      ).rejects.toThrow(NotFoundException)
+    })
+
+    it("should throw if old participants don't match new participants", async () => {
+      jest.spyOn(service, 'findOneById').mockResolvedValue({
+        participants: [{ student: 'different_student' }],
+      } as any)
+
+      await expect(
+        service.update(
+          lessonId,
+          { participants: [{ student: studentId }] } as any,
+          { role: UserRoles.Admin } as any
+        )
+      ).rejects.toThrow(BadRequestException)
+    })
+  })
+
+  describe('#findOneById', () => {
+    it('should return null if id is null', async () => {
+      const result = await service.findOneById(null)
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('#assertLessonCreatedByTeacher', () => {
+    it('should throw if the lesson is not found', async () => {
+      jest.spyOn(service, 'findOneById').mockResolvedValue(null)
+
+      await expect(
+        service.assertLessonCreatedByTeacher(lessonId, teacherId)
+      ).rejects.toThrow(NotFoundException)
+    })
+
+    it('should throw if the teacher is not the author', async () => {
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValue({ teacher: 'anotherTeacherId' } as any)
+
+      await expect(
+        service.assertLessonCreatedByTeacher(lessonId, teacherId)
+      ).rejects.toThrow(BadRequestException)
+    })
+
+    it('should not throw if the teacher is the author', async () => {
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValue({ teacher: teacherId } as any)
+
+      await expect(
+        service.assertLessonCreatedByTeacher(lessonId, teacherId)
+      ).resolves.toBeUndefined()
     })
   })
 })

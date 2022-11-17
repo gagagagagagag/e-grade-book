@@ -1,38 +1,32 @@
-import { Type } from 'class-transformer'
 import {
-  IsArray,
-  IsMongoId,
+  IsDateString,
   IsNumber,
-  IsOptional,
   Min,
   Max,
-  ArrayMinSize,
-  IsDateString,
+  IsOptional,
+  IsArray,
   ValidateNested,
+  ArrayMinSize,
 } from 'class-validator'
+import { Type } from 'class-transformer'
 
 import { LessonParticipantDto } from './lesson-participant.dto'
 
-export class CreateLessonDto {
+export class UpdateLessonDto {
   @IsOptional()
-  @IsMongoId()
-  student?: string
-
-  @IsOptional()
-  @IsMongoId()
-  group?: string
-
   @IsDateString()
-  date: Date
+  date?: Date
 
+  @IsOptional()
   @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 0 })
   @Min(0)
   @Max(1000)
-  duration: number
+  duration?: number
 
+  @IsOptional()
   @IsArray()
   @ValidateNested()
   @ArrayMinSize(1)
   @Type(() => LessonParticipantDto)
-  participants: LessonParticipantDto[]
+  participants?: LessonParticipantDto[]
 }
