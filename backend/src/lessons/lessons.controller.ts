@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
 
-import { CurrentUser, IsAdmin, IsTeacher } from '../auth/decorators'
+import { CurrentUser, IsTeacher } from '../auth/decorators'
 import { User } from '../users/schemas'
 import { CreateLessonDto, UpdateLessonDto } from './dtos'
 import { LessonsService } from './lessons.service'
