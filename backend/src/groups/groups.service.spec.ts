@@ -15,6 +15,7 @@ describe('GroupsService', () => {
 
   beforeEach(async () => {
     fakeGroupModel = {
+      find: jest.fn(),
       findByIdAndDelete: jest.fn(),
       findById: jest.fn().mockReturnValue({ exec: jest.fn() }),
       findByIdAndUpdate: jest.fn().mockResolvedValue({ id }),
@@ -68,6 +69,32 @@ describe('GroupsService', () => {
 
   describe('#getGroups', () => {
     // nothing to test for now
+  })
+
+  describe('#getAllGroups', () => {
+    describe('notContainingStudents', () => {
+      it('should check if students are students', async () => {
+        await service.getAllGroups({ notContainingStudents: [studentId] })
+
+        expect(fakeUsersService.assertUsersHaveRole).toHaveBeenCalled()
+      })
+
+      it('should not check if students are students if query not provided', async () => {
+        await service.getAllGroups()
+
+        expect(fakeUsersService.assertUsersHaveRole).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('notAssignedToTeacher', () => {
+      it('should throw if user is not a teacher', async () => {
+        fakeUsersService.findUserWithRole = jest.fn().mockResolvedValue(null)
+
+        await expect(
+          service.getAllGroups({ notAssignedToTeacher: teacherId })
+        ).rejects.toThrow(NotFoundException)
+      })
+    })
   })
 
   describe('#findOneById', () => {

@@ -10,7 +10,7 @@ import { InjectModel } from '@nestjs/mongoose'
 
 import { PaginationOptionsDto } from '../dtos'
 import { UsersService } from '../users/users.service'
-import { User, UserRoles } from '../users/schemas'
+import { TeacherUser, User, UserRoles } from '../users/schemas'
 import { QueryBuilder } from '../utils'
 import { Group, GroupDocument } from './group.schema'
 import { UpdateGroupDto } from './dtos'
@@ -49,6 +49,41 @@ export class GroupsService {
     const count = await this.groupModel.countDocuments(queryBuilder.getQuery())
 
     return paginationOptions.createResponse(data, count)
+  }
+
+  async getAllGroups(
+    filters: {
+      notContainingStudents?: string[]
+      notAssignedToTeacher?: string
+    } = {}
+  ) {
+    const queryBuilder = new QueryBuilder()
+
+    if (filters.notContainingStudents) {
+      await this.usersService.assertUsersHaveRole(
+        filters.notContainingStudents,
+        UserRoles.Student
+      )
+
+      queryBuilder.add({ students: { $nin: filters.notContainingStudents } })
+    }
+
+    if (filters.notAssignedToTeacher) {
+      const teacher = await this.usersService.findUserWithRole<TeacherUser>(
+        filters.notAssignedToTeacher,
+        UserRoles.Teacher
+      )
+
+      if (!teacher) {
+        throw new NotFoundException('Teacher not found')
+      }
+
+      queryBuilder.add({ _id: { $nin: teacher.groups } })
+    }
+
+    return this.groupModel.find(queryBuilder.getQuery(), null, {
+      lean: true,
+    })
   }
 
   async findOneById(id: string | null) {

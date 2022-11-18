@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common'
 
 import { CurrentUser, IsAdmin, IsTeacher } from '../auth/decorators'
 import { PaginationOptions } from '../decorators'
@@ -10,6 +19,18 @@ import { GroupsService } from './groups.service'
 @Controller('groups')
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
+
+  @IsAdmin()
+  @Get('/all')
+  getAllGroups(
+    @Query('notContainingStudents') notContainingStudents?: string[],
+    @Query('notAssignedToTeacher') notAssignedToTeacher?: string
+  ) {
+    return this.groupsService.getAllGroups({
+      notContainingStudents,
+      notAssignedToTeacher,
+    })
+  }
 
   @IsTeacher()
   @Get('/:id')
