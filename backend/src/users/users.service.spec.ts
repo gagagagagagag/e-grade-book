@@ -39,6 +39,7 @@ describe('UsersService', () => {
     }
     fakeGroupsService = {
       findOneById: jest.fn().mockResolvedValue(true),
+      getUsersFromGroups: jest.fn().mockResolvedValue([id]),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -259,6 +260,19 @@ describe('UsersService', () => {
       expect(fakeTeachersService.assertUserAssignedToTeacher).toHaveBeenCalled()
     })
 
+    it('should not throw if the user is connected via a group and consider groups is true', async () => {
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValue({ role: UserRoles.Teacher, groups: [] } as any)
+
+      await service.assertUserAssignedToUser(teacherId, id, true)
+
+      expect(fakeGroupsService.getUsersFromGroups).toHaveBeenCalled()
+      expect(
+        fakeTeachersService.assertUserAssignedToTeacher
+      ).not.toHaveBeenCalled()
+    })
+
     it('should call the parent service if role is parent', async () => {
       jest
         .spyOn(service, 'findOneById')
@@ -277,6 +291,46 @@ describe('UsersService', () => {
       await expect(
         service.assertUserAssignedToUser(teacherId, id)
       ).rejects.toThrow(BadRequestException)
+    })
+  })
+
+  describe('#getUser', () => {
+    const assertMock = jest.fn()
+
+    beforeEach(() => {
+      assertMock.mockReset()
+      jest
+        .spyOn(service, 'assertUserAssignedToUser')
+        .mockImplementation(assertMock)
+      fakeUserModel.findOne = jest
+        .fn()
+        .mockReturnValue({ exec: () => Promise.resolve(true) })
+    })
+
+    it('should check if the user is assigned to the parent', async () => {
+      await service.getUser(id, { id, role: UserRoles.Parent } as any)
+
+      expect(assertMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        true
+      )
+    })
+
+    it('should check if the user is assigned to the teacher', async () => {
+      await service.getUser(id, { id, role: UserRoles.Teacher } as any)
+
+      expect(assertMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        true
+      )
+    })
+
+    it('should query for user id if student', async () => {
+      await service.getUser(id, { id, role: UserRoles.Student } as any)
+
+      expect(fakeUserModel.findOne).toHaveBeenCalledWith({ _id: id })
     })
   })
 

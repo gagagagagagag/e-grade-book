@@ -1,4 +1,5 @@
 import { Model } from 'mongoose'
+import { reduce, uniq } from 'lodash'
 import {
   BadRequestException,
   forwardRef,
@@ -127,6 +128,39 @@ export class GroupsService {
     }
 
     return result
+  }
+
+  async getUsersFromGroups(groupIds: string[]) {
+    const groups = await this.groupModel.find(
+      { _id: { $in: groupIds } },
+      'students',
+      {
+        lean: true,
+      }
+    )
+
+    if (groups.length !== groupIds.length) {
+      throw new BadRequestException('Some ids are invalid')
+    }
+
+    return uniq(
+      reduce<Group, string[]>(
+        groups,
+        (result, group) => {
+          const groupStudents = group.students as unknown as string[]
+
+          if (groupStudents) {
+            return [
+              ...result,
+              ...groupStudents.map((student) => student.toString()),
+            ]
+          }
+
+          return result
+        },
+        []
+      )
+    )
   }
 
   async assertGroupContains(groupId: string, studentIds: string[]) {

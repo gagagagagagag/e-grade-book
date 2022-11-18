@@ -135,6 +135,36 @@ describe('GroupsService', () => {
     })
   })
 
+  describe('#getUsersFromGroups', () => {
+    const studentId2 = 'studentId2'
+    const studentId3 = 'studentId3'
+    const groups = [
+      {
+        students: [studentId, studentId3],
+      },
+      {},
+      { students: [studentId2, studentId3] },
+    ]
+
+    it('should throw if not all ids are group ids', async () => {
+      fakeGroupModel.find = jest.fn().mockResolvedValue([])
+
+      await expect(service.getUsersFromGroups([id])).rejects.toThrow(
+        BadRequestException
+      )
+    })
+
+    it('should extract ids and remove duplicates', async () => {
+      fakeGroupModel.find = jest.fn().mockResolvedValue(groups)
+
+      const result = await service.getUsersFromGroups([id, id, id])
+
+      expect(result).toEqual(
+        expect.arrayContaining([studentId, studentId2, studentId3])
+      )
+    })
+  })
+
   describe('#assignStudent', () => {
     it('should throw if student is not a student', async () => {
       fakeUsersService.findUserWithRole = jest.fn().mockResolvedValue(null)

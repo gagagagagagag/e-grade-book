@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common'
 
-import { IsAdmin, IsAuthenticated, CurrentUserRole } from '../auth/decorators'
+import { IsAdmin, IsAuthenticated, CurrentUser } from '../auth/decorators'
 import { PaginationOptions } from '../decorators'
 import { PaginationOptionsDto } from '../dtos'
 import { AssignStudentDto, AssignGroupDto } from './dtos'
-import { UserRoles } from './schemas'
+import { User, UserRoles } from './schemas'
 import { UsersService } from './users.service'
 
 @Controller('users')
@@ -13,8 +13,8 @@ export class UsersController {
 
   @IsAuthenticated()
   @Get('/:id')
-  getUser(@Param('id') id: string, @CurrentUserRole() role: UserRoles) {
-    return this.usersService.getUser(id, role)
+  getUser(@Param('id') id: string, @CurrentUser() currentUser: User) {
+    return this.usersService.getUser(id, currentUser)
   }
 
   @IsAdmin()

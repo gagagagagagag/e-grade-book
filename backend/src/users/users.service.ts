@@ -12,6 +12,7 @@ import { PaginationOptionsDto } from '../dtos'
 import { GroupsService } from '../groups/groups.service'
 import { QueryBuilder } from '../utils'
 import { ParentsService } from './parents.service'
+import { TeachersService } from './teachers.service'
 import {
   AdminUser,
   ParentUser,
@@ -21,7 +22,6 @@ import {
   UserDocument,
   UserRoles,
 } from './schemas'
-import { TeachersService } from './teachers.service'
 
 @Injectable()
 export class UsersService {
@@ -125,7 +125,11 @@ export class UsersService {
     await this.teachersService.assertGroupAssignedToTeacher(teacher.id, groupId)
   }
 
-  async assertUserAssignedToUser(targetId: string, userId: string) {
+  async assertUserAssignedToUser(
+    targetId: string,
+    userId: string,
+    considerGroups = false
+  ) {
     const user = await this.findUserWithRole(userId, UserRoles.Student)
 
     if (!user) {
@@ -140,6 +144,18 @@ export class UsersService {
 
     switch (target.role) {
       case UserRoles.Teacher:
+        const teacherTarget = target as TeacherUser
+        if (considerGroups) {
+          const teacherGroups = teacherTarget.groups as unknown as string[]
+          const users = await this.groupsService.getUsersFromGroups(
+            teacherGroups
+          )
+
+          if (users.includes(userId)) {
+            return
+          }
+        }
+
         return this.teachersService.assertUserAssignedToTeacher(
           targetId,
           userId
@@ -151,11 +167,27 @@ export class UsersService {
     }
   }
 
-  async getUser(id: string, currentUserRole: UserRoles) {
-    // check what type the requested user is
-    // check if the current user can request this user
-    // return data that this user is allowed to see
-    console.log(id, currentUserRole)
+  async getUser(id: string, currentUser: User) {
+    const queryBuilder = new QueryBuilder({ _id: id })
+
+    if (
+      currentUser.role === UserRoles.Teacher ||
+      currentUser.role === UserRoles.Parent
+    ) {
+      await this.assertUserAssignedToUser(currentUser.id, id, true)
+    }
+
+    queryBuilder.add(
+      currentUser.role === UserRoles.Student && { _id: currentUser.id }
+    )
+
+    const user = this.userModel.findOne(queryBuilder.getQuery()).exec()
+
+    if (!user) {
+      throw new NotFoundException('User not found')
+    }
+
+    return user
   }
 
   async getUsers(
