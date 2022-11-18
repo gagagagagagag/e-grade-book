@@ -2,8 +2,9 @@ import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { getModelToken } from '@nestjs/mongoose'
 import { Test, TestingModule } from '@nestjs/testing'
 import { Model } from 'mongoose'
-import { UsersService } from '../users/users.service'
 
+import { User, UserRoles } from '../users/schemas'
+import { UsersService } from '../users/users.service'
 import { Group, GroupDocument } from './group.schema'
 import { GroupsService } from './groups.service'
 
@@ -22,6 +23,7 @@ describe('GroupsService', () => {
     fakeUsersService = {
       findUserWithRole: jest.fn().mockResolvedValue({ _id: teacherId }),
       assertUsersHaveRole: jest.fn(),
+      assertGroupAssignedToUser: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -45,6 +47,24 @@ describe('GroupsService', () => {
   const name = 'group_name'
   const studentId = 'student_id'
   const teacherId = 'teacherId'
+
+  describe('#getGoup', () => {
+    it('should check if the group is assigned to the teacher', async () => {
+      jest.spyOn(service, 'findOneById').mockResolvedValue(true as any)
+
+      service.getGroup(id, { role: UserRoles.Teacher } as unknown as User)
+
+      expect(fakeUsersService.assertGroupAssignedToUser).toHaveBeenCalled()
+    })
+
+    it('should throw if the group is not found', async () => {
+      jest.spyOn(service, 'findOneById').mockResolvedValue(null)
+
+      await expect(
+        service.getGroup(id, { role: UserRoles.Admin } as unknown as User)
+      ).rejects.toThrow(NotFoundException)
+    })
+  })
 
   describe('#getGroups', () => {
     // nothing to test for now

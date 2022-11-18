@@ -1,14 +1,21 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
 
-import { IsAdmin } from '../auth/decorators'
+import { CurrentUser, IsAdmin, IsTeacher } from '../auth/decorators'
 import { PaginationOptions } from '../decorators'
 import { PaginationOptionsDto } from '../dtos'
+import { User } from '../users/schemas'
 import { CreateGroupDto, UpdateGroupDto, AssignStudentDto } from './dtos'
 import { GroupsService } from './groups.service'
 
 @Controller('groups')
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
+
+  @IsTeacher()
+  @Get('/:id')
+  getGroup(@Param('id') id: string, @CurrentUser() currentUser: User) {
+    return this.groupsService.getGroup(id, currentUser)
+  }
 
   @IsAdmin()
   @Get()

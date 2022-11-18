@@ -10,7 +10,7 @@ import { InjectModel } from '@nestjs/mongoose'
 
 import { PaginationOptionsDto } from '../dtos'
 import { UsersService } from '../users/users.service'
-import { UserRoles } from '../users/schemas'
+import { User, UserRoles } from '../users/schemas'
 import { QueryBuilder } from '../utils'
 import { Group, GroupDocument } from './group.schema'
 import { UpdateGroupDto } from './dtos'
@@ -22,6 +22,20 @@ export class GroupsService {
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService
   ) {}
+
+  async getGroup(id: string, currentUser: User) {
+    if (currentUser.role === UserRoles.Teacher) {
+      await this.usersService.assertGroupAssignedToUser(currentUser.id, id)
+    }
+
+    const group = await this.findOneById(id)
+
+    if (!group) {
+      throw new NotFoundException('Group not found')
+    }
+
+    return group
+  }
 
   async getGroups(paginationOptions: PaginationOptionsDto) {
     const queryBuilder = new QueryBuilder(paginationOptions.getBaseQuery())
