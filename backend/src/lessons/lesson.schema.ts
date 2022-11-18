@@ -1,8 +1,7 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Types } from 'mongoose'
 
-import { Group } from '../groups/group.schema'
-import { StudentUser, TeacherUser } from '../users/schemas'
+import { StudentUser } from '../users/schemas'
 
 export type LessonDocument = Lesson & Document
 
