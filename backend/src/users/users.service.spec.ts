@@ -368,6 +368,136 @@ describe('UsersService', () => {
     })
   })
 
+  describe('#getAllUsers', () => {
+    it('shuld set the role as the filter', async () => {
+      await service.getAllUsers(UserRoles.Admin)
+
+      expect(fakeUserModel.find).toBeCalledWith(
+        expect.objectContaining({
+          role: UserRoles.Admin,
+        }),
+        null,
+        expect.anything()
+      )
+    })
+
+    it('should throw if role is unknown', async () => {
+      await expect(
+        service.getAllUsers('unknownRole' as UserRoles)
+      ).rejects.toThrow(BadRequestException)
+    })
+
+    it('should call findUserWithRole if notAssignedToTeacher is set on Student', async () => {
+      const mockedFindUserWithRole = jest.fn(() =>
+        Promise.resolve({ students: [] } as any)
+      )
+      jest
+        .spyOn(service, 'findUserWithRole')
+        .mockImplementation(mockedFindUserWithRole)
+
+      await service.getAllUsers(UserRoles.Student, {
+        notAssignedToTeacher: teacherId,
+      })
+
+      expect(mockedFindUserWithRole).toHaveBeenCalled()
+    })
+
+    it('should call findUserWithRole if notAssignedToParent is set on Student', async () => {
+      const mockedFindUserWithRole = jest.fn(() =>
+        Promise.resolve({ students: [] } as any)
+      )
+      jest
+        .spyOn(service, 'findUserWithRole')
+        .mockImplementation(mockedFindUserWithRole)
+
+      await service.getAllUsers(UserRoles.Student, {
+        notAssignedToParent: parentId,
+      })
+
+      expect(mockedFindUserWithRole).toHaveBeenCalled()
+    })
+
+    describe('errors', () => {
+      it('should throw if notContainingStudents is set on admin', async () => {
+        await expect(
+          service.getAllUsers(UserRoles.Admin, { notContainingStudents: [] })
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if notContainingGroups is set on admin', async () => {
+        await expect(
+          service.getAllUsers(UserRoles.Admin, { notContainingGroups: [] })
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if notAssignedToTeacher is set on admin', async () => {
+        await expect(
+          service.getAllUsers(UserRoles.Admin, {
+            notAssignedToTeacher: teacherId,
+          })
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if notAssignedToParent is set on admin', async () => {
+        await expect(
+          service.getAllUsers(UserRoles.Admin, {
+            notAssignedToParent: parentId,
+          })
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if notAssignedToTeacher is set on teacher', async () => {
+        await expect(
+          service.getAllUsers(UserRoles.Teacher, {
+            notAssignedToTeacher: teacherId,
+          })
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if notAssignedToParent is set on teacher', async () => {
+        await expect(
+          service.getAllUsers(UserRoles.Teacher, {
+            notAssignedToParent: parentId,
+          })
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if notContainingGroups is set on parent', async () => {
+        await expect(
+          service.getAllUsers(UserRoles.Parent, { notContainingGroups: [] })
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if notAssignedToTeacher is set on parent', async () => {
+        await expect(
+          service.getAllUsers(UserRoles.Parent, {
+            notAssignedToTeacher: teacherId,
+          })
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if notAssignedToParent is set on parent', async () => {
+        await expect(
+          service.getAllUsers(UserRoles.Parent, {
+            notAssignedToParent: parentId,
+          })
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if notContainingStudents is set on student', async () => {
+        await expect(
+          service.getAllUsers(UserRoles.Student, { notContainingStudents: [] })
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if notContainingGroups is set on student', async () => {
+        await expect(
+          service.getAllUsers(UserRoles.Student, { notContainingGroups: [] })
+        ).rejects.toThrow(BadRequestException)
+      })
+    })
+  })
+
   describe('#assignGroup', () => {
     const groupId = 'groupId'
     const teacherId = 'teacherId'

@@ -211,6 +211,89 @@ export class UsersService {
     return paginationOptions.createResponse(data, count)
   }
 
+  async getAllUsers(
+    role: UserRoles,
+    flags: {
+      notContainingStudents?: string[]
+      notContainingGroups?: string[]
+      notAssignedToTeacher?: string
+      notAssignedToParent?: string
+    } = {}
+  ) {
+    const queryBuilder = new QueryBuilder()
+
+    queryBuilder.add({ role })
+
+    switch (role) {
+      case UserRoles.Admin:
+        queryBuilder.throwErrors(
+          Boolean(flags.notContainingStudents),
+          Boolean(flags.notContainingGroups),
+          Boolean(flags.notAssignedToTeacher),
+          Boolean(flags.notAssignedToParent)
+        )
+        break
+      case UserRoles.Teacher:
+        queryBuilder.throwErrors(
+          Boolean(flags.notAssignedToTeacher),
+          Boolean(flags.notAssignedToParent)
+        )
+        break
+      case UserRoles.Parent:
+        queryBuilder.throwErrors(
+          Boolean(flags.notContainingGroups),
+          Boolean(flags.notAssignedToTeacher),
+          Boolean(flags.notAssignedToParent)
+        )
+        break
+      case UserRoles.Student:
+        queryBuilder.throwErrors(
+          Boolean(flags.notContainingStudents),
+          Boolean(flags.notContainingGroups)
+        )
+
+        if (flags.notAssignedToTeacher) {
+          const teacher = await this.findUserWithRole<TeacherUser>(
+            flags.notAssignedToTeacher,
+            UserRoles.Teacher
+          )
+
+          if (!teacher) {
+            throw new NotFoundException('Teacher not found')
+          }
+
+          queryBuilder.add({ _id: { $nin: teacher.students } })
+        }
+
+        if (flags.notAssignedToParent) {
+          const parent = await this.findUserWithRole<ParentUser>(
+            flags.notAssignedToParent,
+            UserRoles.Parent
+          )
+
+          if (!parent) {
+            throw new NotFoundException('Parent not found')
+          }
+
+          queryBuilder.add({ _id: { $nin: parent.students } })
+        }
+        break
+      default:
+        throw new BadRequestException('Incorrect role provided')
+    }
+
+    queryBuilder.add(
+      flags.notContainingStudents && {
+        students: { $nin: flags.notContainingStudents },
+      },
+      flags.notContainingGroups && {
+        groups: { $nin: flags.notContainingGroups },
+      }
+    )
+
+    return this.userModel.find(queryBuilder.getQuery(), null, { lean: true })
+  }
+
   async assignGroup(teacherId: string, groupId: string, add: boolean) {
     const group = await this.groupsService.findOneById(groupId)
 

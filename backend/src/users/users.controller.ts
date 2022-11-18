@@ -11,6 +11,23 @@ import { UsersService } from './users.service'
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @IsAdmin()
+  @Get('/all/:role')
+  getAllUsers(
+    @Param('role') role: UserRoles,
+    @Query('notContainingStudents') notContainingStudents?: string[],
+    @Query('notContainingGroups') notContainingGroups?: string[],
+    @Query('notAssignedToTeacher') notAssignedToTeacher?: string,
+    @Query('notAssignedToParent') notAssignedToParent?: string
+  ) {
+    return this.usersService.getAllUsers(role, {
+      notContainingStudents,
+      notContainingGroups,
+      notAssignedToTeacher,
+      notAssignedToParent,
+    })
+  }
+
   @IsAuthenticated()
   @Get('/:id')
   getUser(@Param('id') id: string, @CurrentUser() currentUser: User) {
