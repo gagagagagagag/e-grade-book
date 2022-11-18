@@ -132,6 +132,14 @@ describe('AuthService', () => {
     })
   })
 
+  describe('#login', () => {
+    it('should update lastLogin to current date', async () => {
+      await service.login(user)
+
+      expect(fakeUsersService.update).toHaveBeenCalled()
+    })
+  })
+
   describe('#createUser', () => {
     it('should throw if password is provided and sendEmail is true', async () => {
       await expect(

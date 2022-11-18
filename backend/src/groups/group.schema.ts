@@ -5,7 +5,7 @@ import { BaseSchema } from '../utils'
 
 export type GroupDocument = Group & Document
 
-@Schema()
+@Schema({ timestamps: true })
 export class Group extends BaseSchema {
   @Prop({ required: true, index: 'text' })
   name: string

@@ -10,10 +10,10 @@ export class TeacherUser extends UserBase {
   role: UserRoles.Teacher
 
   @Prop({ type: Types.ObjectId, ref: 'StudentUser' })
-  students: string[]
+  students?: string[]
 
   @Prop({ type: Types.ObjectId, ref: 'Group' })
-  groups: string[]
+  groups?: string[]
 }
 
 export const TeacherUserSchema = SchemaFactory.createForClass(TeacherUser)

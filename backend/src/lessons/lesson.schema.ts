@@ -24,7 +24,7 @@ export enum LessonHomework {
   NotDone = 'notDone',
 }
 
-@Schema()
+@Schema({ timestamps: true })
 export class Lesson {
   @Prop({ type: Types.ObjectId, ref: 'TeacherUser', required: true })
   teacher: string

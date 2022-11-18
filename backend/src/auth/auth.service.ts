@@ -36,6 +36,8 @@ export class AuthService {
   }
 
   async login(user: User) {
+    await this.usersService.update(user.id, { lastLogin: new Date() })
+
     return this.tokenService.signAuthTokens(user.id, user.email)
   }
 

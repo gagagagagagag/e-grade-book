@@ -10,7 +10,7 @@ export class ParentUser extends UserBase {
   role: UserRoles.Parent
 
   @Prop({ type: Types.ObjectId, ref: 'StudentUser' })
-  students: string[]
+  students?: string[]
 }
 
 export const ParentUserSchema = SchemaFactory.createForClass(ParentUser)

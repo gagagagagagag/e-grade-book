@@ -148,7 +148,7 @@ export class UsersService {
         if (considerGroups) {
           const teacherGroups = teacherTarget.groups
           const users = await this.groupsService.getUsersFromGroups(
-            teacherGroups
+            teacherGroups ?? []
           )
 
           if (users.includes(userId)) {

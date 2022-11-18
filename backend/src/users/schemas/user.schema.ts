@@ -22,6 +22,8 @@ export abstract class UserBase extends BaseSchema {
   password?: string
 
   role: UserRoles
+
+  lastLogin?: Date
 }
 
 @Schema({ discriminatorKey: 'role' })
@@ -31,6 +33,9 @@ export class User extends UserBase {
 
   @Prop({ unique: true })
   email: string
+
+  @Prop({ required: false })
+  lastLogin?: Date
 
   @Prop({ default: false })
   passwordInitiated: boolean

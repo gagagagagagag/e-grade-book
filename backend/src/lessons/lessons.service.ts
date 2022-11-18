@@ -227,7 +227,7 @@ export class LessonsService {
         const parentUser = currentUser as ParentUser
         students = studentFilter
           ? intersection(parentUser.students, [studentFilter])
-          : parentUser.students
+          : parentUser.students ?? []
         break
       default:
         return lessons
