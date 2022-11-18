@@ -93,7 +93,7 @@ export class GroupsService {
 
     const result = await this.groupModel.updateOne(
       {
-        id: groupId,
+        _id: groupId,
         students: add ? { $ne: studentId } : { $eq: studentId },
       },
       add

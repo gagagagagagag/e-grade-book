@@ -10,6 +10,7 @@ import { Model } from 'mongoose'
 
 import { PaginationOptionsDto } from '../dtos'
 import { GroupsService } from '../groups/groups.service'
+import { QueryBuilder } from '../utils'
 import { ParentsService } from './parents.service'
 import {
   AdminUser,
@@ -32,8 +33,19 @@ export class UsersService {
     private readonly parentsService: ParentsService
   ) {}
 
-  create(name: string, email: string, role: UserRoles): Promise<User> {
-    const user = new this.userModel({ name, email, role })
+  create(
+    name: string,
+    email: string,
+    role: UserRoles,
+    password?: string
+  ): Promise<User> {
+    const user = new this.userModel({
+      name,
+      email,
+      role,
+      password,
+      passwordInitiated: Boolean(password),
+    })
 
     return user.save()
   }
@@ -152,22 +164,17 @@ export class UsersService {
       role?: UserRoles
     }
   ) {
-    let query = paginationOptions.getBaseQuery()
+    const queryBuilder = new QueryBuilder(paginationOptions.getBaseQuery())
 
-    if (filters.role) {
-      query = {
-        ...query,
-        role: { $eq: filters.role },
-      }
-    }
+    queryBuilder.add(filters.role && { role: filters.role })
 
-    const data = await this.userModel.find(query, null, {
-      skip: paginationOptions.skip,
-      limit: paginationOptions.limit,
-      sort: paginationOptions.sort,
-    })
+    const data = await this.userModel.find(
+      queryBuilder.getQuery(),
+      null,
+      paginationOptions.createFindOptions()
+    )
 
-    const count = await this.userModel.countDocuments(query)
+    const count = await this.userModel.countDocuments(queryBuilder.getQuery())
 
     return paginationOptions.createResponse(data, count)
   }

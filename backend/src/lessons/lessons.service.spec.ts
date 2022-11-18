@@ -4,8 +4,9 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { Model } from 'mongoose'
 
 import { GroupsService } from '../groups/groups.service'
-import { UserRoles } from '../users/schemas'
+import { User, UserRoles } from '../users/schemas'
 import { UsersService } from '../users/users.service'
+import { generateTestPaginationOptions } from '../utils/stubs/pagination-options.stub'
 import {
   Lesson,
   LessonDocument,
@@ -23,6 +24,8 @@ describe('LessonsService', () => {
   beforeEach(async () => {
     fakeLessonModel = {
       create: jest.fn(),
+      find: jest.fn().mockResolvedValue([]),
+      countDocuments: jest.fn().mockResolvedValue(0),
       findByIdAndUpdate: jest.fn(),
       findByIdAndDelete: jest.fn().mockResolvedValue(true),
     }
@@ -57,9 +60,154 @@ describe('LessonsService', () => {
   })
 
   const lessonId = 'lessonId'
+  const parentId = 'parentId'
   const studentId = 'studentId'
   const teacherId = 'teacherId'
   const groupId = 'groupId'
+
+  describe('#getLessons', () => {
+    describe('request as admin', () => {
+      const currentUser = { role: UserRoles.Admin } as unknown as User
+
+      it('should not alter the query for an admin', async () => {
+        const paginationOptions = generateTestPaginationOptions()
+        await service.getLessons(paginationOptions, currentUser)
+
+        expect(fakeLessonModel.find).toBeCalledWith(
+          {},
+          expect.anything(),
+          expect.anything()
+        )
+      })
+    })
+
+    describe('request as teacher', () => {
+      const currentUser = {
+        role: UserRoles.Teacher,
+        id: teacherId,
+      } as unknown as User
+
+      it('should filter by the teacherId', async () => {
+        const paginationOptions = generateTestPaginationOptions()
+        await service.getLessons(paginationOptions, currentUser)
+
+        expect(fakeLessonModel.find).toBeCalledWith(
+          { teacher: teacherId },
+          expect.anything(),
+          expect.anything()
+        )
+      })
+
+      it('should not allow to change the teacher filter', async () => {
+        const paginationOptions = generateTestPaginationOptions()
+        await service.getLessons(paginationOptions, currentUser, {
+          teacher: 'anotherTeacher',
+        })
+
+        expect(fakeLessonModel.find).toBeCalledWith(
+          { teacher: teacherId },
+          expect.anything(),
+          expect.anything()
+        )
+      })
+    })
+
+    describe('request as parent', () => {
+      const studentId2 = 'studentId2'
+      const studentId3 = 'studentId3'
+      const currentUser = {
+        role: UserRoles.Parent,
+        id: parentId,
+        students: [studentId, studentId2],
+      } as unknown as User
+
+      it('should filter participants by parents students', async () => {
+        const paginationOptions = generateTestPaginationOptions()
+        await service.getLessons(paginationOptions, currentUser)
+
+        expect(fakeLessonModel.find).toBeCalledWith(
+          {
+            'participants.student': {
+              $in: [studentId, studentId2],
+            },
+          },
+          expect.anything(),
+          expect.anything()
+        )
+      })
+
+      it('should intersect the filter user with parents students', async () => {
+        const paginationOptions = generateTestPaginationOptions()
+        await service.getLessons(paginationOptions, currentUser, {
+          student: studentId3,
+        })
+
+        expect(fakeLessonModel.find).toBeCalledWith(
+          {
+            'participants.student': {
+              $in: [],
+            },
+          },
+          expect.anything(),
+          expect.anything()
+        )
+      })
+    })
+
+    describe('request as student', () => {
+      const currentUser = {
+        role: UserRoles.Student,
+        id: studentId,
+      } as unknown as User
+
+      it('should filter participants by current users id', async () => {
+        const paginationOptions = generateTestPaginationOptions()
+        await service.getLessons(paginationOptions, currentUser)
+
+        expect(fakeLessonModel.find).toBeCalledWith(
+          {
+            'participants.student': studentId,
+          },
+          expect.anything(),
+          expect.anything()
+        )
+      })
+
+      it('should overwrite student filter to current user id', async () => {
+        const paginationOptions = generateTestPaginationOptions()
+        await service.getLessons(paginationOptions, currentUser, {
+          student: 'anotherStudent',
+        })
+
+        expect(fakeLessonModel.find).toBeCalledWith(
+          {
+            'participants.student': studentId,
+          },
+          expect.anything(),
+          expect.anything()
+        )
+      })
+    })
+
+    describe('validation errors', () => {
+      it('should throw if search term is provided', async () => {
+        const paginationOptions = generateTestPaginationOptions({ q: 'test' })
+        await expect(
+          service.getLessons(paginationOptions, null as unknown as User)
+        ).rejects.toThrow(BadRequestException)
+      })
+
+      it('should throw if both group and student filter is provided', async () => {
+        const paginationOptions = generateTestPaginationOptions()
+        await expect(
+          service.getLessons(paginationOptions, null as unknown as User, {
+            group: groupId,
+            student: studentId,
+          })
+        ).rejects.toThrow(BadRequestException)
+      })
+    })
+  })
 
   describe('#create', () => {
     const participants = [
@@ -305,6 +453,102 @@ describe('LessonsService', () => {
       await expect(
         service.assertLessonCreatedByTeacher(lessonId, teacherId)
       ).resolves.toBeUndefined()
+    })
+  })
+
+  describe('#getLessonProjection', () => {
+    it('should remove teacher for student', () => {
+      const result = service.getLessonProjection(UserRoles.Student)
+
+      expect(result).toBe('-teacher')
+    })
+
+    it('should remove teacher for parent', () => {
+      const result = service.getLessonProjection(UserRoles.Parent)
+
+      expect(result).toBe('-teacher')
+    })
+
+    it('should give empty projection for admin', () => {
+      const result = service.getLessonProjection(UserRoles.Admin)
+
+      expect(result).toBe('')
+    })
+
+    it('should give empty projection for teacher', () => {
+      const result = service.getLessonProjection(UserRoles.Teacher)
+
+      expect(result).toBe('')
+    })
+  })
+
+  describe('#sanitizeLessons', () => {
+    const studentId2 = 'studentId2'
+    const lessons = [
+      {
+        participants: [
+          {
+            student: studentId,
+          },
+          {
+            student: studentId2,
+          },
+        ],
+      },
+    ] as unknown as Lesson[]
+
+    it('should not change lessons for admin', () => {
+      const result = service.sanitizeLessons(lessons, {
+        role: UserRoles.Admin,
+      } as unknown as User)
+
+      expect(result[0].participants.length).toEqual(2)
+    })
+
+    it('should not change lessons for teacher', () => {
+      const result = service.sanitizeLessons(lessons, {
+        role: UserRoles.Teacher,
+      } as unknown as User)
+
+      expect(result[0].participants.length).toEqual(2)
+    })
+
+    it('should remove other participants from user', () => {
+      const result = service.sanitizeLessons(lessons, {
+        role: UserRoles.Student,
+        id: studentId,
+      } as unknown as User)
+
+      const participants = result[0].participants
+      expect(participants.length).toEqual(1)
+      expect(participants[0].student).toEqual(studentId)
+    })
+
+    it('should remove participants other that parents students', () => {
+      const result = service.sanitizeLessons(lessons, {
+        role: UserRoles.Parent,
+        id: parentId,
+        students: [studentId],
+      } as unknown as User)
+
+      const participants = result[0].participants
+      expect(participants.length).toEqual(1)
+      expect(participants[0].student).toEqual(studentId)
+    })
+
+    it('should intersect filtered user with parents students', () => {
+      const result = service.sanitizeLessons(
+        lessons,
+        {
+          role: UserRoles.Parent,
+          id: parentId,
+          students: [studentId],
+        } as unknown as User,
+        studentId2
+      )
+
+      const participants = result[0].participants
+      expect(participants.length).toEqual(0)
     })
   })
 })

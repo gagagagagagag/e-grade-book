@@ -292,7 +292,7 @@ describe('UsersService', () => {
 
       expect(fakeUserModel.find).toHaveBeenCalledWith(
         expect.objectContaining({
-          role: { $eq: UserRoles.Student },
+          role: UserRoles.Student,
         }),
         null,
         expect.anything()

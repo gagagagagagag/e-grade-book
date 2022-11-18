@@ -47,7 +47,7 @@ describe('ParentsService', () => {
 
       expect(fakeParentUserModel.updateOne).toBeCalledWith(
         {
-          id: parentId,
+          _id: parentId,
           students: { $ne: studentId },
         },
         { $push: { students: studentId } },
@@ -60,7 +60,7 @@ describe('ParentsService', () => {
 
       expect(fakeParentUserModel.updateOne).toBeCalledWith(
         {
-          id: parentId,
+          _id: parentId,
           students: { $eq: studentId },
         },
         { $pull: { students: studentId } },

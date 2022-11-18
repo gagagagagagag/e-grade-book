@@ -1,6 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common'
 
-import { CurrentUser, IsTeacher } from '../auth/decorators'
+import { CurrentUser, IsAuthenticated, IsTeacher } from '../auth/decorators'
+import { PaginationOptions } from '../decorators'
+import { PaginationOptionsDto } from '../dtos'
 import { User } from '../users/schemas'
 import { CreateLessonDto, UpdateLessonDto } from './dtos'
 import { LessonsService } from './lessons.service'
@@ -9,8 +20,21 @@ import { LessonsService } from './lessons.service'
 export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 
+  @IsAuthenticated()
   @Get()
-  getLessons() {}
+  getLessons(
+    @PaginationOptions() paginationOptions: PaginationOptionsDto,
+    @CurrentUser() currentUser: User,
+    @Query('teacher') teacher?: string,
+    @Query('group') group?: string,
+    @Query('student') student?: string
+  ) {
+    return this.lessonsService.getLessons(paginationOptions, currentUser, {
+      teacher,
+      group,
+      student,
+    })
+  }
 
   @IsTeacher(false)
   @Post()

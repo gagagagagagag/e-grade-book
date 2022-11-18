@@ -1,4 +1,4 @@
-import { isEqual } from 'lodash'
+import { isEqual, intersection } from 'lodash'
 import {
   BadRequestException,
   Injectable,
@@ -8,8 +8,10 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
 import { GroupsService } from '../groups/groups.service'
-import { User, UserRoles } from '../users/schemas'
+import { ParentUser, User, UserRoles } from '../users/schemas'
 import { UsersService } from '../users/users.service'
+import { PaginationOptionsDto } from '../dtos'
+import { QueryBuilder } from '../utils'
 import { CreateLessonDto, UpdateLessonDto } from './dtos'
 import { Lesson, LessonDocument } from './lesson.schema'
 
@@ -21,6 +23,71 @@ export class LessonsService {
     private readonly usersService: UsersService,
     private readonly groupsService: GroupsService
   ) {}
+
+  async getLessons(
+    paginationOptions: PaginationOptionsDto,
+    currentUser: User,
+    filters: {
+      teacher?: string
+      group?: string
+      student?: string
+    } = {}
+  ) {
+    const queryBuilder = new QueryBuilder()
+
+    queryBuilder.throwErrors(
+      paginationOptions.q && "You can't search lessons",
+      filters.group &&
+        filters.student &&
+        "Can't filter by group and student at the same time"
+    )
+
+    queryBuilder.add(
+      filters.group && { group: filters.group },
+      filters.student && { 'participants.student': filters.student }
+    )
+
+    switch (currentUser.role) {
+      case UserRoles.Admin:
+        queryBuilder.add(filters.teacher && { teacher: filters.teacher })
+        break
+      case UserRoles.Teacher:
+        queryBuilder.add({ teacher: currentUser.id })
+        break
+      case UserRoles.Parent:
+        const parentUser = currentUser as ParentUser
+        const studentFilter = filters.student
+          ? intersection(parentUser.students as unknown as string[], [
+              filters.student,
+            ])
+          : parentUser.students
+
+        queryBuilder.add({
+          'participants.student': {
+            $in: studentFilter,
+          },
+        })
+        break
+      case UserRoles.Student:
+        queryBuilder.add({ 'participants.student': currentUser.id })
+        break
+      default:
+        throw new BadRequestException('Current user has an unknown role')
+    }
+
+    const data = await this.lessonModel.find(
+      queryBuilder.getQuery(),
+      this.getLessonProjection(currentUser.role),
+      paginationOptions.createFindOptions()
+    )
+
+    const count = await this.lessonModel.countDocuments(queryBuilder.getQuery())
+
+    return paginationOptions.createResponse(
+      this.sanitizeLessons(data, currentUser, filters.student),
+      count
+    )
+  }
 
   async create(teacherId: string, data: CreateLessonDto) {
     const participantIds = data.participants.map(
@@ -135,5 +202,48 @@ export class LessonsService {
     if (lesson.teacher.toString() !== teacherId) {
       throw new BadRequestException('Lesson was not created by this teacher')
     }
+  }
+
+  getLessonProjection(currentUserRole: UserRoles) {
+    switch (currentUserRole) {
+      case UserRoles.Parent:
+        return '-teacher'
+      case UserRoles.Student:
+        return '-teacher'
+      default:
+        return ''
+    }
+  }
+
+  sanitizeLessons(
+    lessons: Lesson[],
+    currentUser: User,
+    studentFilter?: string
+  ) {
+    let students: string[] = []
+    switch (currentUser.role) {
+      case UserRoles.Student:
+        students = [currentUser.id]
+        break
+      case UserRoles.Parent:
+        const parentUser = currentUser as ParentUser
+        students = studentFilter
+          ? intersection(parentUser.students as unknown as string[], [
+              studentFilter,
+            ])
+          : (parentUser.students as unknown as string[])
+        break
+      default:
+        return lessons
+    }
+
+    return lessons.map((document) => {
+      document.participants = document.participants.filter((participant) =>
+        students.some(
+          (student) => student.toString() === participant.student.toString()
+        )
+      )
+      return document
+    })
   }
 }

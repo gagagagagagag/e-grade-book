@@ -65,7 +65,7 @@ export class TeachersService {
   async assignStudent(teacherId: string, studentId: string, add: boolean) {
     const result = await this.teacherUserModel.updateOne(
       {
-        id: teacherId,
+        _id: teacherId,
         students: add ? { $ne: studentId } : { $eq: studentId },
       },
       add

@@ -24,7 +24,10 @@ export class ParentsService {
 
   async assignStudent(parentId: string, studentId: string, add: boolean) {
     const result = await this.parentUserModel.updateOne(
-      { id: parentId, students: add ? { $ne: studentId } : { $eq: studentId } },
+      {
+        _id: parentId,
+        students: add ? { $ne: studentId } : { $eq: studentId },
+      },
       add
         ? { $push: { students: studentId } }
         : { $pull: { students: studentId } },

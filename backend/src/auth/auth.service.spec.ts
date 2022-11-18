@@ -140,6 +140,21 @@ describe('AuthService', () => {
       expect(fakeMailerService.sendWelcomeEmail).toHaveBeenCalledTimes(1)
     })
 
+    it('should create a user with a password if provided', async () => {
+      fakeUsersService.findOneByEmail = () => Promise.resolve(null)
+
+      const result = await service.createUser({
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        password: user.password,
+      })
+
+      expect(result).toEqual(true)
+      expect(fakeUsersService.create).toHaveBeenCalledTimes(1)
+      expect(fakeMailerService.sendWelcomeEmail).toHaveBeenCalledTimes(0)
+    })
+
     it('should throw an error if email is already in use', async () => {
       await expect(
         service.createUser({

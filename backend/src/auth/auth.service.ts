@@ -42,19 +42,30 @@ export class AuthService {
       throw new BadRequestException('Email already in use')
     }
 
+    let hashedPassword: string | undefined = undefined
+    if (data.password) {
+      hashedPassword = await bcrypt.hash(
+        data.password,
+        +this.configService.getOrThrow<string>('SALT_ROUNDS')
+      )
+    }
+
     const createdUser = await this.usersService.create(
       data.name,
       data.email,
-      data.role
+      data.role,
+      hashedPassword
     )
 
-    await this.mailerService.sendWelcomeEmail(
-      createdUser.email,
-      await this.tokenService.signInitiatePasswordToken(
-        createdUser.id,
-        createdUser.email
+    if (!hashedPassword) {
+      await this.mailerService.sendWelcomeEmail(
+        createdUser.email,
+        await this.tokenService.signInitiatePasswordToken(
+          createdUser.id,
+          createdUser.email
+        )
       )
-    )
+    }
 
     return true
   }

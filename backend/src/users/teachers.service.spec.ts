@@ -69,7 +69,7 @@ describe('TeachersService', () => {
 
       expect(fakeTeacherUserModel.updateOne).toBeCalledWith(
         {
-          id: teacherId,
+          _id: teacherId,
           students: { $ne: studentId },
         },
         { $push: { students: studentId } },
@@ -82,7 +82,7 @@ describe('TeachersService', () => {
 
       expect(fakeTeacherUserModel.updateOne).toBeCalledWith(
         {
-          id: teacherId,
+          _id: teacherId,
           students: { $eq: studentId },
         },
         { $pull: { students: studentId } },

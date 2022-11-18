@@ -64,6 +64,15 @@ export class PaginationOptionsDto {
     return Math.ceil(count / this.perPage)
   }
 
+  createFindOptions() {
+    return {
+      skip: this.skip,
+      limit: this.limit,
+      sort: this.sort,
+      lean: true,
+    }
+  }
+
   createResponse<T = any>(data: T[], count: number) {
     return {
       data,
