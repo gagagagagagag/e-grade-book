@@ -68,6 +68,7 @@ describe('AuthService', () => {
           email: user.email,
           type: TokenTypes.Refresh,
         }),
+      verifyResetPasswordToken: jest.fn(),
       signInitiatePasswordToken: jest.fn(),
       signResetPasswordToken: jest.fn(),
     }
@@ -364,6 +365,26 @@ describe('AuthService', () => {
       await expect(
         service.sendPasswordLink({ email: user.email })
       ).rejects.toThrow()
+    })
+  })
+
+  describe('#resetPassword', () => {
+    const token = 'token'
+    const password = 'password'
+
+    it('should verify token and call update', async () => {
+      fakeTokenService.verifyResetPasswordToken = jest
+        .fn()
+        .mockResolvedValue({ id: user.id })
+      const mockedHashPassword = jest.fn()
+      jest.spyOn(service, 'hashPassword').mockImplementation(mockedHashPassword)
+
+      await service.resetPassword(token, password)
+
+      expect(fakeTokenService.verifyResetPasswordToken).toHaveBeenCalledWith(
+        token
+      )
+      expect(mockedHashPassword).toHaveBeenCalledWith(password)
     })
   })
 })

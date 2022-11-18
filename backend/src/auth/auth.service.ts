@@ -160,4 +160,14 @@ export class AuthService {
 
     return true
   }
+
+  async resetPassword(token: string, password: string) {
+    const payload = await this.tokenService.verifyResetPasswordToken(token)
+
+    await this.usersService.update(payload.id, {
+      password: await this.hashPassword(password),
+    })
+
+    return true
+  }
 }

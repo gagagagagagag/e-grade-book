@@ -11,6 +11,7 @@ import {
   InitiatePasswordDto,
   ChangeEmailDto,
   SendPasswordLinkDto,
+  ResetPasswordDto,
 } from './dtos'
 import { AuthService } from './auth.service'
 import { CurrentUser, IsAdmin, IsAuthenticated } from './decorators'
@@ -62,6 +63,7 @@ export class AuthController {
     )
   }
 
+  @Throttle(5, 60)
   @Post('/initiatePassword')
   initiatePassword(@Body() body: InitiatePasswordDto) {
     return this.authService.initiatePassword(body.token, body.password)
@@ -83,5 +85,11 @@ export class AuthController {
       id: body.userId,
       email: body.email,
     })
+  }
+
+  @Throttle(5, 60)
+  @Post('/resetPassword')
+  resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body.token, body.password)
   }
 }
