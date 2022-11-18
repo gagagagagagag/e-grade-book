@@ -28,13 +28,13 @@ export enum LessonHomework {
 @Schema()
 export class Lesson {
   @Prop({ type: Types.ObjectId, ref: 'TeacherUser', required: true })
-  teacher: TeacherUser
+  teacher: string
 
   @Prop({ type: Types.ObjectId, ref: 'StudentUser' })
-  student?: StudentUser
+  student?: string
 
   @Prop({ type: Types.ObjectId, ref: 'Group' })
-  group?: Group
+  group?: string
 
   @Prop({ required: true })
   date: Date

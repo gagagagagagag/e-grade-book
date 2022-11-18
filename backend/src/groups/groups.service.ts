@@ -147,7 +147,7 @@ export class GroupsService {
       reduce<Group, string[]>(
         groups,
         (result, group) => {
-          const groupStudents = group.students as unknown as string[]
+          const groupStudents = group.students
 
           if (groupStudents) {
             return [

@@ -146,7 +146,7 @@ export class UsersService {
       case UserRoles.Teacher:
         const teacherTarget = target as TeacherUser
         if (considerGroups) {
-          const teacherGroups = teacherTarget.groups as unknown as string[]
+          const teacherGroups = teacherTarget.groups
           const users = await this.groupsService.getUsersFromGroups(
             teacherGroups
           )

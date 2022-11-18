@@ -57,9 +57,7 @@ export class LessonsService {
       case UserRoles.Parent:
         const parentUser = currentUser as ParentUser
         const studentFilter = filters.student
-          ? intersection(parentUser.students as unknown as string[], [
-              filters.student,
-            ])
+          ? intersection(parentUser.students, [filters.student])
           : parentUser.students
 
         queryBuilder.add({
@@ -228,10 +226,8 @@ export class LessonsService {
       case UserRoles.Parent:
         const parentUser = currentUser as ParentUser
         students = studentFilter
-          ? intersection(parentUser.students as unknown as string[], [
-              studentFilter,
-            ])
-          : (parentUser.students as unknown as string[])
+          ? intersection(parentUser.students, [studentFilter])
+          : parentUser.students
         break
       default:
         return lessons
