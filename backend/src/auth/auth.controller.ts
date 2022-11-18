@@ -1,4 +1,5 @@
 import { Controller, Post, Body, UseGuards, Get, Patch } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 
 import { User } from '../users/schemas'
 import { SerializeUser } from '../decorators'
@@ -9,6 +10,7 @@ import {
   ChangePasswordDto,
   InitiatePasswordDto,
   ChangeEmailDto,
+  SendPasswordLinkDto,
 } from './dtos'
 import { AuthService } from './auth.service'
 import { CurrentUser, IsAdmin, IsAuthenticated } from './decorators'
@@ -63,5 +65,23 @@ export class AuthController {
   @Post('/initiatePassword')
   initiatePassword(@Body() body: InitiatePasswordDto) {
     return this.authService.initiatePassword(body.token, body.password)
+  }
+
+  @Throttle(1, 60)
+  @Post('/sendPasswordLink')
+  sendPasswordLink(@Body() body: SendPasswordLinkDto) {
+    return this.authService.sendPasswordLink({
+      id: body.userId,
+      email: body.email,
+    })
+  }
+
+  @IsAdmin()
+  @Post('/sendPasswordLink/admin')
+  sendPasswordLinkNoRateLimit(@Body() body: SendPasswordLinkDto) {
+    return this.authService.sendPasswordLink({
+      id: body.userId,
+      email: body.email,
+    })
   }
 }

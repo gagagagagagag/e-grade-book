@@ -35,10 +35,10 @@ describe('MailerService', () => {
     service = module.get<MailerService>(MailerService)
   })
 
-  it('should send a welcome email', async () => {
-    const email = 'test@test.com'
-    const token = 'token'
+  const email = 'test@test.com'
+  const token = 'token'
 
+  it('should send a welcome email', async () => {
     await service.sendWelcomeEmail(email, token)
 
     expect(fakeMailerService.sendMail).toHaveBeenCalledTimes(1)
@@ -52,5 +52,11 @@ describe('MailerService', () => {
         },
       })
     )
+  })
+
+  it('should send the reset password email', async () => {
+    await service.sendResetPasswordEmail(email, token)
+
+    expect(fakeMailerService.sendMail).toHaveBeenCalledTimes(1)
   })
 })

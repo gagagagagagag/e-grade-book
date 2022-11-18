@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common'
+import { SkipThrottle } from '@nestjs/throttler'
 
 import { IsAdmin, IsAuthenticated, CurrentUser } from '../auth/decorators'
 import { PaginationOptions } from '../decorators'
@@ -28,6 +29,7 @@ export class UsersController {
     })
   }
 
+  @SkipThrottle()
   @IsAuthenticated()
   @Get('/:id')
   getUser(@Param('id') id: string, @CurrentUser() currentUser: User) {

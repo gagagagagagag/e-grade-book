@@ -26,6 +26,16 @@ export class TokenService {
     return this.jwtService.signAsync(payload, { expiresIn: '7 days' })
   }
 
+  async signResetPasswordToken(id: string, email: string) {
+    const payload: JwtPayload = {
+      id,
+      email,
+      type: TokenTypes.ResetPassword,
+    }
+
+    return this.jwtService.signAsync(payload, { expiresIn: '7 days' })
+  }
+
   private async signAccessToken(id: string, email: string) {
     const payload: JwtPayload = {
       id,
@@ -79,6 +89,38 @@ export class TokenService {
     }
   }
 
+  async verifyResetPasswordToken(token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token)
+
+      if (payload.type !== TokenTypes.ResetPassword) {
+        throw new BadRequestException(
+          'The supplied token is not a reset password token'
+        )
+      }
+
+      const user = await this.usersService.findOneById(payload.id)
+
+      if (!user || user.email !== payload.email) {
+        throw new BadRequestException('The supplied token is invalid')
+      }
+
+      if (!user.passwordInitiated) {
+        throw new BadRequestException(
+          "The user doesn't have an initiated password"
+        )
+      }
+
+      return payload
+    } catch (e) {
+      if (e instanceof TokenExpiredError) {
+        throw new UnauthorizedException('The token has expired')
+      }
+
+      throw new BadRequestException('Invalid refresh token')
+    }
+  }
+
   async verifyInitiatePasswordToken(token: string) {
     try {
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token)
@@ -96,9 +138,7 @@ export class TokenService {
       }
 
       if (user.passwordInitiated) {
-        throw new BadRequestException(
-          'The password has already been instantiated'
-        )
+        throw new BadRequestException('The password has already been initiated')
       }
 
       return payload

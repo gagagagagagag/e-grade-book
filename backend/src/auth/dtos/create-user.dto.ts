@@ -4,6 +4,7 @@ import {
   NotEquals,
   IsString,
   IsOptional,
+  IsBoolean,
 } from 'class-validator'
 
 import { UserRoles } from '../../users/schemas'
@@ -22,4 +23,7 @@ export class CreateUserDto {
   @IsEnum(UserRoles)
   @NotEquals(UserRoles.Admin)
   role: UserRoles
+
+  @IsBoolean()
+  sendEmail: boolean
 }

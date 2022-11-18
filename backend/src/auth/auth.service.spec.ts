@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common'
+import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
 import { Types } from 'mongoose'
@@ -36,15 +36,20 @@ describe('AuthService', () => {
     }
     fakeMailerService = {
       sendWelcomeEmail: jest.fn(),
+      sendResetPasswordEmail: jest.fn(),
     }
     fakeUsersService = {
+      findOneById: jest.fn().mockResolvedValue({ passwordInitiated: true }),
       create: jest
         .fn()
         .mockImplementation((email, password) =>
           Promise.resolve({ ...user, email, password })
         ),
-      findOneByEmail: (email) =>
-        Promise.resolve(!email ? null : { ...user, email }),
+      findOneByEmail: jest
+        .fn()
+        .mockImplementation((email) =>
+          Promise.resolve(!email ? null : { ...user, email })
+        ),
       update: jest
         .fn()
         .mockImplementation((id, attrs) =>
@@ -64,6 +69,7 @@ describe('AuthService', () => {
           type: TokenTypes.Refresh,
         }),
       signInitiatePasswordToken: jest.fn(),
+      signResetPasswordToken: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -126,6 +132,18 @@ describe('AuthService', () => {
   })
 
   describe('#createUser', () => {
+    it('should throw if password is provided and sendEmail is true', async () => {
+      await expect(
+        service.createUser({
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          password: user.password,
+          sendEmail: true,
+        })
+      ).rejects.toThrow(BadRequestException)
+    })
+
     it('should create a new user', async () => {
       fakeUsersService.findOneByEmail = () => Promise.resolve(null)
 
@@ -133,11 +151,41 @@ describe('AuthService', () => {
         email: user.email,
         name: user.name,
         role: user.role,
+        sendEmail: true,
       })
 
       expect(result).toEqual(true)
       expect(fakeUsersService.create).toHaveBeenCalledTimes(1)
       expect(fakeMailerService.sendWelcomeEmail).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not throw if sending email fails', async () => {
+      fakeUsersService.findOneByEmail = () => Promise.resolve(null)
+      fakeMailerService.sendWelcomeEmail = jest.fn().mockRejectedValue(null)
+
+      await expect(
+        service.createUser({
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          sendEmail: true,
+        })
+      ).resolves.not.toThrow()
+    })
+
+    it('should create a user but not send an email if sendEmail is false', async () => {
+      fakeUsersService.findOneByEmail = () => Promise.resolve(null)
+
+      const result = await service.createUser({
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        sendEmail: false,
+      })
+
+      expect(result).toEqual(true)
+      expect(fakeUsersService.create).toHaveBeenCalledTimes(1)
+      expect(fakeMailerService.sendWelcomeEmail).toHaveBeenCalledTimes(0)
     })
 
     it('should create a user with a password if provided', async () => {
@@ -148,6 +196,7 @@ describe('AuthService', () => {
         name: user.name,
         role: user.role,
         password: user.password,
+        sendEmail: false,
       })
 
       expect(result).toEqual(true)
@@ -161,8 +210,48 @@ describe('AuthService', () => {
           email: user.email,
           name: user.name,
           role: user.role,
+          sendEmail: true,
         })
       ).rejects.toThrow(BadRequestException)
+    })
+  })
+
+  describe('#sendInitiatePasswordEmail', () => {
+    it('should create initiate password token', async () => {
+      await service.sendInitiatePasswordEmail(user.id, user.email)
+
+      expect(fakeTokenService.signInitiatePasswordToken).toHaveBeenCalled()
+    })
+
+    it('should call send welcome email', async () => {
+      await service.sendInitiatePasswordEmail(user.id, user.email)
+
+      expect(fakeMailerService.sendWelcomeEmail).toHaveBeenCalled()
+    })
+  })
+
+  describe('#sendResetPasswordEmail', () => {
+    it('should create reset password token', async () => {
+      await service.sendResetPasswordEmail(user.id, user.email)
+
+      expect(fakeTokenService.signResetPasswordToken).toHaveBeenCalled()
+    })
+
+    it('should call send reset password email', async () => {
+      await service.sendResetPasswordEmail(user.id, user.email)
+
+      expect(fakeMailerService.sendResetPasswordEmail).toHaveBeenCalled()
+    })
+  })
+
+  describe('#hashPassword', () => {
+    it('should call bcrypt with data', async () => {
+      const mockedHash = jest.fn()
+      jest.spyOn(bcrypt, 'hash').mockImplementation(mockedHash)
+
+      await service.hashPassword('password')
+
+      expect(mockedHash).toHaveBeenCalledWith('password', 10)
     })
   })
 
@@ -194,6 +283,87 @@ describe('AuthService', () => {
       await expect(
         service.changePassword(user, user.password!, 'test')
       ).rejects.toThrow(BadRequestException)
+    })
+  })
+
+  describe('#sendPasswordLink', () => {
+    it('should throw if neither id nor email is provided', async () => {
+      await expect(service.sendPasswordLink({})).rejects.toThrow(
+        BadRequestException
+      )
+    })
+
+    it('should throw if both id and email are provided', async () => {
+      await expect(
+        service.sendPasswordLink({ id: user.id, email: user.email })
+      ).rejects.toThrow(BadRequestException)
+    })
+
+    it('should call findOneById if id provided', async () => {
+      fakeUsersService.findOneById = jest
+        .fn()
+        .mockResolvedValue({ passwordInitiated: true })
+
+      await service.sendPasswordLink({ id: user.id })
+
+      expect(fakeUsersService.findOneById).toHaveBeenCalledWith(user.id)
+      expect(fakeUsersService.findOneByEmail).not.toHaveBeenCalled()
+    })
+
+    it('should call findOneById if id provided', async () => {
+      fakeUsersService.findOneByEmail = jest
+        .fn()
+        .mockResolvedValue({ passwordInitiated: true })
+
+      await service.sendPasswordLink({ email: user.email })
+
+      expect(fakeUsersService.findOneByEmail).toHaveBeenCalledWith(user.email)
+      expect(fakeUsersService.findOneById).not.toHaveBeenCalled()
+    })
+
+    it('should throw if user is not found', async () => {
+      fakeUsersService.findOneByEmail = jest.fn().mockResolvedValue(null)
+
+      await expect(
+        service.sendPasswordLink({ email: user.email })
+      ).rejects.toThrow(NotFoundException)
+    })
+
+    it('should send initiate password if password not initiated', async () => {
+      fakeUsersService.findOneByEmail = jest
+        .fn()
+        .mockResolvedValue({ passwordInitiated: false })
+
+      await service.sendPasswordLink({ email: user.email })
+
+      expect(fakeMailerService.sendWelcomeEmail).toHaveBeenCalled()
+      expect(fakeMailerService.sendResetPasswordEmail).not.toHaveBeenCalled()
+    })
+
+    it('should send reset password if password initiated', async () => {
+      fakeUsersService.findOneByEmail = jest
+        .fn()
+        .mockResolvedValue({ passwordInitiated: true })
+
+      await service.sendPasswordLink({ email: user.email })
+
+      expect(fakeMailerService.sendResetPasswordEmail).toHaveBeenCalled()
+      expect(fakeMailerService.sendWelcomeEmail).not.toHaveBeenCalled()
+    })
+
+    it('should throw if sending email fails', async () => {
+      fakeUsersService.findOneByEmail = jest
+        .fn()
+        .mockResolvedValue({ passwordInitiated: false })
+      jest
+        .spyOn(service, 'sendInitiatePasswordEmail')
+        .mockImplementation(() => {
+          throw new Error()
+        })
+
+      await expect(
+        service.sendPasswordLink({ email: user.email })
+      ).rejects.toThrow()
     })
   })
 })

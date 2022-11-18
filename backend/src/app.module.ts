@@ -1,7 +1,8 @@
 import { Module, ValidationPipe } from '@nestjs/common'
-import { APP_PIPE } from '@nestjs/core'
+import { APP_GUARD, APP_PIPE } from '@nestjs/core'
 import { MongooseModule } from '@nestjs/mongoose'
 import { ConfigModule, ConfigService } from '@nestjs/config'
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'
 
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
@@ -16,6 +17,10 @@ import { LessonsModule } from './lessons/lessons.module'
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
+    }),
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 60,
     }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
@@ -45,6 +50,10 @@ import { LessonsModule } from './lessons/lessons.module'
       useValue: new ValidationPipe({
         whitelist: true,
       }),
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

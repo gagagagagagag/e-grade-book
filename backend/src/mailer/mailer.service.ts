@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config'
 
 export enum EmailTemplates {
   Welcome = 'welcome',
+  ResetPassword = 'resetPassword',
 }
 
 @Injectable()
@@ -33,5 +34,18 @@ export class MailerService {
         'APP_URL'
       )}/initPassword?token=${token}`,
     })
+  }
+
+  async sendResetPasswordEmail(email: string, token: string) {
+    await this.sendEmail(
+      email,
+      'Password reset requested',
+      EmailTemplates.ResetPassword,
+      {
+        resetPassUrl: `${this.configService.getOrThrow<string>(
+          'APP_URL'
+        )}/resetPassword?token=${token}`,
+      }
+    )
   }
 }
