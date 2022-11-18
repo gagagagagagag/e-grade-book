@@ -46,6 +46,10 @@ describe('GroupsService', () => {
   const studentId = 'student_id'
   const teacherId = 'teacherId'
 
+  describe('#getGroups', () => {
+    // nothing to test for now
+  })
+
   describe('#findOneById', () => {
     it('should return null if id is null', async () => {
       const result = await service.findOneById(null)

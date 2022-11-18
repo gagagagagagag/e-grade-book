@@ -8,8 +8,10 @@ import {
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 
+import { PaginationOptionsDto } from '../dtos'
 import { UsersService } from '../users/users.service'
 import { UserRoles } from '../users/schemas'
+import { QueryBuilder } from '../utils'
 import { Group, GroupDocument } from './group.schema'
 import { UpdateGroupDto } from './dtos'
 
@@ -20,6 +22,20 @@ export class GroupsService {
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService
   ) {}
+
+  async getGroups(paginationOptions: PaginationOptionsDto) {
+    const queryBuilder = new QueryBuilder(paginationOptions.getBaseQuery())
+
+    const data = await this.groupModel.find(
+      queryBuilder.getQuery(),
+      null,
+      paginationOptions.createFindOptions()
+    )
+
+    const count = await this.groupModel.countDocuments(queryBuilder.getQuery())
+
+    return paginationOptions.createResponse(data, count)
+  }
 
   async findOneById(id: string | null) {
     if (!id) {

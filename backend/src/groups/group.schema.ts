@@ -8,7 +8,7 @@ export type GroupDocument = Group & Document
 
 @Schema()
 export class Group extends BaseSchema {
-  @Prop({ required: true })
+  @Prop({ required: true, index: 'text' })
   name: string
 
   @Prop({ type: Types.ObjectId, ref: StudentUser.name })
