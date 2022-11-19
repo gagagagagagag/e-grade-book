@@ -1,13 +1,27 @@
+import { useState } from 'react'
 import { Stack, Button, Title, Text, PasswordInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { validatePassword } from '../../utils/custom-validators'
+import backendAxios from '../../axios-instance'
 import { ErrorAlert } from '../ui/alerts'
 
 export const ResetPassword = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+
+  const resetPasswordHandler = async (password: string) => {
+    await backendAxios
+      .post('/auth/resetPassword', {
+        token: searchParams.get('token'),
+        password,
+      })
+      .then(
+        () => navigate('/'),
+        () => null
+      )
+  }
 
   return (
     <>
@@ -26,7 +40,7 @@ export const ResetPassword = () => {
           onClick={() => navigate('/forgotPassword')}
         />
       ) : (
-        <SetPasswordForm />
+        <SetPasswordForm onSubmit={resetPasswordHandler} />
       )}
     </>
   )
@@ -35,6 +49,18 @@ export const ResetPassword = () => {
 export const InitiatePassword = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+
+  const initiatePasswordHandler = async (password: string) => {
+    await backendAxios
+      .post('/auth/initiatePassword', {
+        token: searchParams.get('token'),
+        password,
+      })
+      .then(
+        () => navigate('/'),
+        () => null
+      )
+  }
 
   return (
     <>
@@ -53,13 +79,18 @@ export const InitiatePassword = () => {
           onClick={() => navigate('/forgotPassword')}
         />
       ) : (
-        <SetPasswordForm />
+        <SetPasswordForm onSubmit={initiatePasswordHandler} />
       )}
     </>
   )
 }
 
-const SetPasswordForm = () => {
+const SetPasswordForm = ({
+  onSubmit,
+}: {
+  onSubmit: (password: string) => Promise<void>
+}) => {
+  const [loading, setLoading] = useState(false)
   const form = useForm({
     initialValues: {
       password: '',
@@ -70,7 +101,15 @@ const SetPasswordForm = () => {
   })
 
   return (
-    <form onSubmit={form.onSubmit(async (values) => {})}>
+    <form
+      onSubmit={form.onSubmit(async (values) => {
+        setLoading(true)
+
+        await onSubmit(values.password)
+
+        setLoading(false)
+      })}
+    >
       <Stack spacing={'sm'}>
         <PasswordInput
           label={'Hasło'}
@@ -79,7 +118,13 @@ const SetPasswordForm = () => {
         />
       </Stack>
       <Stack mt={'sm'} spacing={'sm'}>
-        <Button type={'submit'} mt={'xl'} variant={'filled'} fullWidth>
+        <Button
+          type={'submit'}
+          mt={'xl'}
+          variant={'filled'}
+          loading={loading}
+          fullWidth
+        >
           Potwierdź
         </Button>
       </Stack>
