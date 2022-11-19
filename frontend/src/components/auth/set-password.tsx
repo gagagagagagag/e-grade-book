@@ -3,12 +3,14 @@ import { useForm } from '@mantine/form'
 import { useSearchParams } from 'react-router-dom'
 import { IconAlertCircle } from '@tabler/icons'
 
+import { validatePassword } from '../../utils/custom-validators'
+
 export const ResetPassword = () => {
   const [searchParams] = useSearchParams()
 
   return (
     <>
-      <Title order={2} align={'center'}>
+      <Title order={1} size={'h3'} align={'center'}>
         Witaj 👋🏻
       </Title>
       <Text weight={400} mt={'md'} mb={'md'}>
@@ -24,7 +26,7 @@ export const InitiatePassword = () => {
 
   return (
     <>
-      <Title order={2} align={'center'}>
+      <Title order={1} size={'h3'} align={'center'}>
         Witaj 👋🏻
       </Title>
       <Text weight={400} mt={'md'} mb={'md'}>
@@ -39,6 +41,9 @@ const SetPasswordForm = () => {
   const form = useForm({
     initialValues: {
       password: '',
+    },
+    validate: {
+      password: validatePassword,
     },
   })
 

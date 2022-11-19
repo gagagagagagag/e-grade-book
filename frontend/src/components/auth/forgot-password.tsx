@@ -2,10 +2,12 @@ import { Title, Text, Stack, TextInput, Button } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useNavigate } from 'react-router-dom'
 
+import { validateEmail } from '../../utils/custom-validators'
+
 export const ForgotPassword = () => {
   return (
     <>
-      <Title order={2} align={'center'}>
+      <Title order={1} size={'h3'} align={'center'}>
         Zapomiałem hasła 👋🏻
       </Title>
       <Text weight={400} mt={'md'} mb={'md'}>
@@ -22,6 +24,9 @@ const ForgotPasswordForm = () => {
     initialValues: {
       email: '',
     },
+    validate: {
+      email: validateEmail,
+    },
   })
 
   return (
@@ -29,6 +34,7 @@ const ForgotPasswordForm = () => {
       <Stack spacing={'sm'}>
         <TextInput
           label={'Email'}
+          type={'email'}
           variant={'filled'}
           {...form.getInputProps('email')}
         />

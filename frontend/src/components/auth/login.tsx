@@ -9,10 +9,12 @@ import {
 import { useForm } from '@mantine/form'
 import { useNavigate } from 'react-router-dom'
 
+import { validateEmail, validateRequired } from '../../utils/custom-validators'
+
 export const Login = () => {
   return (
     <>
-      <Title order={2} align={'center'}>
+      <Title order={1} size={'h3'} align={'center'}>
         Witaj 👋🏻
       </Title>
       <Text weight={400} mt={'md'} mb={'md'}>
@@ -30,6 +32,10 @@ const LoginForm = () => {
       email: '',
       password: '',
     },
+    validate: {
+      email: validateEmail,
+      password: validateRequired,
+    },
   })
 
   return (
@@ -37,6 +43,7 @@ const LoginForm = () => {
       <Stack spacing={'sm'}>
         <TextInput
           label={'Email'}
+          type={'email'}
           variant={'filled'}
           {...form.getInputProps('email')}
         />
