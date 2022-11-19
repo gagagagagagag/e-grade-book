@@ -1,5 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { DateTime } from 'luxon'
 
+import { AuthTokens } from '../../components/auth/types'
 import { authInitialize, authRefresh } from './thunks'
 
 export interface AuthStateType {
@@ -25,7 +27,28 @@ const initialState: AuthStateType = {
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {},
+  reducers: {
+    loginSuccess(state, action: PayloadAction<AuthTokens>) {
+      state.isLoggedIn = true
+      state.accessToken = action.payload.accessToken
+      state.refreshToken = action.payload.refreshToken
+
+      const dateNow = DateTime.now().toISO()
+      sessionStorage.setItem('lastRefresh', dateNow)
+      sessionStorage.setItem('refreshToken', action.payload.refreshToken)
+
+      state.lastRefresh = dateNow
+    },
+    logout(state) {
+      state.isLoggedIn = false
+      state.accessToken = null
+      state.refreshToken = null
+      state.lastRefresh = null
+
+      sessionStorage.removeItem('lastRefresh')
+      sessionStorage.removeItem('refreshToken')
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(authInitialize.pending, (state) => {
@@ -68,5 +91,5 @@ const authSlice = createSlice({
 })
 
 export * from './thunks'
-export const {} = authSlice.actions
+export const { loginSuccess, logout } = authSlice.actions
 export default authSlice.reducer

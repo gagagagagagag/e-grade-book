@@ -1,9 +1,14 @@
 import { DateTime } from 'luxon'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 
+import { AuthTokens } from '../../components/auth/types'
 import backendAxios from '../../axios-instance'
 
 const SESSION_LENGTH = 60
+
+interface AuthTokensWithTime extends AuthTokens {
+  lastRefresh: string
+}
 
 const getFromSessionStorageAndRefresh = async () => {
   const lastRefresh = sessionStorage.getItem('lastRefresh')
@@ -11,7 +16,7 @@ const getFromSessionStorageAndRefresh = async () => {
 
   const clearAndReject = () => {
     sessionStorage.removeItem('lastRefresh')
-    sessionStorage.removeItem('lastRefresh')
+    sessionStorage.removeItem('refreshToken')
     return Promise.reject()
   }
 
@@ -46,12 +51,12 @@ const getFromSessionStorageAndRefresh = async () => {
   return clearAndReject()
 }
 
-export const authRefresh = createAsyncThunk(
+export const authRefresh = createAsyncThunk<AuthTokensWithTime>(
   'auth/refresh',
   getFromSessionStorageAndRefresh
 )
 
-export const authInitialize = createAsyncThunk(
+export const authInitialize = createAsyncThunk<AuthTokensWithTime>(
   'auth/initialize',
   getFromSessionStorageAndRefresh
 )

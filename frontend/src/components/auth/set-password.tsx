@@ -1,26 +1,68 @@
 import { useState } from 'react'
 import { Stack, Button, Title, Text, PasswordInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 
 import { validatePassword } from '../../utils/custom-validators'
 import backendAxios from '../../axios-instance'
-import { ErrorAlert } from '../ui/alerts'
+import { ErrorAlert, SuccessAlert } from '../ui/alerts'
 
-export const ResetPassword = () => {
+interface SetPasswordFormResult {
+  password: string
+}
+
+export const SetPassword = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
 
-  const resetPasswordHandler = async (password: string) => {
-    await backendAxios
-      .post('/auth/resetPassword', {
-        token: searchParams.get('token'),
-        password,
-      })
-      .then(
-        () => navigate('/'),
-        () => null
-      )
+  const isResetPassword = location.pathname === '/resetPassword'
+
+  const setPasswordHandler = async ({ password }: SetPasswordFormResult) => {
+    setLoading(true)
+
+    try {
+      if (isResetPassword) {
+        await backendAxios.post('/auth/resetPassword', {
+          token: searchParams.get('token'),
+          password,
+        })
+      } else {
+        await backendAxios.post('/auth/initiatePassword', {
+          token: searchParams.get('token'),
+          password,
+        })
+      }
+
+      setSuccess(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  let content = (
+    <SetPasswordForm loading={loading} onSubmit={setPasswordHandler} />
+  )
+  if (!searchParams.has('token')) {
+    content = (
+      <ErrorAlert
+        message={
+          'Link w który kliknąłeś zawiera błąd, spróbuj wygenerować go ponownie lub skontaktuj się z nami'
+        }
+        buttonText={'Wygeneruj nowy link'}
+        onClick={() => navigate('/forgotPassword')}
+      />
+    )
+  } else if (success) {
+    content = (
+      <SuccessAlert
+        message={'Nowe hasło zostało ustawione, mozesz się teraz zalogować!'}
+        buttonText={'Przejdź do logowania'}
+        onClick={() => navigate('/')}
+      />
+    )
   }
 
   return (
@@ -31,66 +73,18 @@ export const ResetPassword = () => {
       <Text weight={400} mt={'md'} mb={'md'}>
         Wpisz nowe hasło do swojego konta
       </Text>
-      {!searchParams.has('token') ? (
-        <ErrorAlert
-          message={
-            'Link w który kliknąłeś zawiera błąd, spróbuj wygenerować go ponownie lub skontaktuj się z nami'
-          }
-          buttonText={'Wygeneruj nowy link'}
-          onClick={() => navigate('/forgotPassword')}
-        />
-      ) : (
-        <SetPasswordForm onSubmit={resetPasswordHandler} />
-      )}
-    </>
-  )
-}
-
-export const InitiatePassword = () => {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-
-  const initiatePasswordHandler = async (password: string) => {
-    await backendAxios
-      .post('/auth/initiatePassword', {
-        token: searchParams.get('token'),
-        password,
-      })
-      .then(
-        () => navigate('/'),
-        () => null
-      )
-  }
-
-  return (
-    <>
-      <Title order={1} size={'h3'} align={'center'}>
-        Witaj 👋🏻
-      </Title>
-      <Text weight={400} mt={'md'} mb={'md'}>
-        Stwórz hasło do swojego konta
-      </Text>
-      {!searchParams.has('token') ? (
-        <ErrorAlert
-          message={
-            'Link w który kliknąłeś zawiera błąd, spróbuj wygenerować go ponownie lub skontaktuj się z nami'
-          }
-          buttonText={'Wygeneruj nowy link'}
-          onClick={() => navigate('/forgotPassword')}
-        />
-      ) : (
-        <SetPasswordForm onSubmit={initiatePasswordHandler} />
-      )}
+      {content}
     </>
   )
 }
 
 const SetPasswordForm = ({
+  loading,
   onSubmit,
 }: {
-  onSubmit: (password: string) => Promise<void>
+  loading: boolean
+  onSubmit: (data: SetPasswordFormResult) => Promise<void>
 }) => {
-  const [loading, setLoading] = useState(false)
   const form = useForm({
     initialValues: {
       password: '',
@@ -101,15 +95,7 @@ const SetPasswordForm = ({
   })
 
   return (
-    <form
-      onSubmit={form.onSubmit(async (values) => {
-        setLoading(true)
-
-        await onSubmit(values.password)
-
-        setLoading(false)
-      })}
-    >
+    <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack spacing={'sm'}>
         <PasswordInput
           label={'Hasło'}

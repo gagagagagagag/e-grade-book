@@ -7,21 +7,27 @@ import backendAxios from '../../axios-instance'
 import { validateEmail } from '../../utils/custom-validators'
 import { SuccessAlert } from '../ui/alerts'
 
+interface ForgotPasswordFormResult {
+  email: string
+}
+
 export const ForgotPassword = () => {
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  const submitHandler = async (email: string) => {
-    await backendAxios
-      .post('/auth/sendPasswordLink', {
+  const submitHandler = async ({ email }: ForgotPasswordFormResult) => {
+    setLoading(true)
+
+    try {
+      await backendAxios.post('/auth/sendPasswordLink', {
         email,
       })
-      .then(
-        () => {
-          setSuccess(true)
-        },
-        () => null
-      )
+
+      setSuccess(true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -40,6 +46,7 @@ export const ForgotPassword = () => {
         />
       ) : (
         <ForgotPasswordForm
+          loading={loading}
           onSubmit={submitHandler}
           onCancel={() => navigate('/')}
         />
@@ -49,13 +56,14 @@ export const ForgotPassword = () => {
 }
 
 const ForgotPasswordForm = ({
+  loading,
   onSubmit,
   onCancel,
 }: {
-  onSubmit: (email: string) => Promise<void>
+  loading: boolean
+  onSubmit: (data: ForgotPasswordFormResult) => Promise<void>
   onCancel: () => void
 }) => {
-  const [loading, setLoading] = useState(false)
   const form = useForm({
     initialValues: {
       email: '',
@@ -66,15 +74,7 @@ const ForgotPasswordForm = ({
   })
 
   return (
-    <form
-      onSubmit={form.onSubmit(async (values) => {
-        setLoading(false)
-
-        await onSubmit(values.email).then(null, () => null)
-
-        setLoading(false)
-      })}
-    >
+    <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack spacing={'sm'}>
         <TextInput
           label={'Email'}

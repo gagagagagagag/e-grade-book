@@ -1,7 +1,12 @@
 import { useEffect } from 'react'
 
 import { AuthenticatePage } from '../pages'
-import { useAppDispatch, useAppSelector, authInitialize } from '../store'
+import {
+  useAppDispatch,
+  useAppSelector,
+  authInitialize,
+  logout,
+} from '../store'
 import { AppLoading } from './app-loading'
 
 export const App = () => {
@@ -26,5 +31,10 @@ export const App = () => {
     return <AuthenticatePage />
   }
 
-  return <span>App</span>
+  return (
+    <>
+      <span>App</span>
+      <button onClick={() => dispatch(logout())}>loguot</button>
+    </>
+  )
 }

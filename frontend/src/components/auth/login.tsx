@@ -7,11 +7,31 @@ import {
   PasswordInput,
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import backendAxios from '../../axios-instance'
+import { useAppDispatch, loginSuccess } from '../../store'
 import { validateEmail, validateRequired } from '../../utils/custom-validators'
+import { AuthTokens, AuthCredentials } from './types'
 
 export const Login = () => {
+  const [loading, setLoading] = useState(false)
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+
+  const loginHandler = async (data: AuthCredentials) => {
+    setLoading(true)
+
+    try {
+      const response = await backendAxios.post<AuthTokens>('/auth/login', data)
+
+      dispatch(loginSuccess(response.data))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <>
       <Title order={1} size={'h3'} align={'center'}>
@@ -20,13 +40,24 @@ export const Login = () => {
       <Text weight={400} mt={'md'} mb={'md'}>
         Zaloguj się do swojego konta
       </Text>
-      <LoginForm />
+      <LoginForm
+        loading={loading}
+        onSubmit={loginHandler}
+        onForgot={() => navigate('/forgotPassword')}
+      />
     </>
   )
 }
 
-const LoginForm = () => {
-  const navigate = useNavigate()
+const LoginForm = ({
+  loading,
+  onSubmit,
+  onForgot,
+}: {
+  loading: boolean
+  onSubmit: (data: AuthCredentials) => Promise<void>
+  onForgot: () => void
+}) => {
   const form = useForm({
     initialValues: {
       email: '',
@@ -39,7 +70,7 @@ const LoginForm = () => {
   })
 
   return (
-    <form onSubmit={form.onSubmit(async (values) => {})}>
+    <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack spacing={'sm'}>
         <TextInput
           label={'Email'}
@@ -54,12 +85,19 @@ const LoginForm = () => {
         />
       </Stack>
       <Stack mt={'sm'} spacing={'sm'}>
-        <Button type={'submit'} mt={'xl'} variant={'filled'} fullWidth>
+        <Button
+          type={'submit'}
+          mt={'xl'}
+          variant={'filled'}
+          loading={loading}
+          fullWidth
+        >
           Zaloguj się
         </Button>
         <Button
-          onClick={() => navigate('/forgotPassword')}
+          onClick={onForgot}
           variant={'subtle'}
+          disabled={loading}
           fullWidth
         >
           Zapomniałem hasła

@@ -4,16 +4,15 @@ import {
   AuthLayout,
   Login,
   ForgotPassword,
-  InitiatePassword,
-  ResetPassword,
+  SetPassword,
 } from '../components/auth'
 
 export const AuthenticatePage = () => {
   return (
     <Routes>
       <Route element={<AuthLayout />}>
-        <Route path={'/resetPassword'} element={<ResetPassword />} />
-        <Route path={'/initiatePassword'} element={<InitiatePassword />} />
+        <Route path={'/resetPassword'} element={<SetPassword />} />
+        <Route path={'/initiatePassword'} element={<SetPassword />} />
         <Route path={'/forgotPassword'} element={<ForgotPassword />} />
         <Route path={'*'} element={<Login />} />
       </Route>
