@@ -9,13 +9,14 @@ export const AuthLayout = () => {
       <Grid.Col xs={10} md={4} xl={3}>
         <Stack justify={'center'} align={'center'}>
           <Logo />
-          <Paper shadow={'sm'} p={'sm'} mt={'md'} radius={'md'} w={'100%'}>
+          <Paper shadow={'sm'} p={'lg'} mt={'md'} radius={'md'} w={'100%'}>
             <Outlet />
           </Paper>
         </Stack>
       </Grid.Col>
       <Grid.Col
         span={12}
+        mb={'md'}
         sx={(theme) => ({
           alignSelf: 'end',
           display: 'flex',
@@ -28,6 +29,7 @@ export const AuthLayout = () => {
           variant={'link'}
           size={'sm'}
           weight={400}
+          style={{ cursor: 'pointer' }}
           onClick={() =>
             window.open(
               'https://www.ambitni.edu.pl/polityka-prywatnosci/',
@@ -37,7 +39,12 @@ export const AuthLayout = () => {
         >
           Polityka prywatności
         </Text>
-        <Text variant={'link'} size={'sm'} weight={400}>
+        <Text
+          variant={'link'}
+          size={'sm'}
+          weight={400}
+          style={{ cursor: 'pointer' }}
+        >
           Regulamin
         </Text>
       </Grid.Col>
