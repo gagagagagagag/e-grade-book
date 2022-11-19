@@ -1,11 +1,12 @@
-import { Stack, Button, Title, Text, Alert, PasswordInput } from '@mantine/core'
+import { Stack, Button, Title, Text, PasswordInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { useSearchParams } from 'react-router-dom'
-import { IconAlertCircle } from '@tabler/icons'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { validatePassword } from '../../utils/custom-validators'
+import { ErrorAlert } from '../ui/alerts'
 
 export const ResetPassword = () => {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
   return (
@@ -16,12 +17,23 @@ export const ResetPassword = () => {
       <Text weight={400} mt={'md'} mb={'md'}>
         Wpisz nowe hasło do swojego konta
       </Text>
-      {!searchParams.has('token') ? <TokenMissingError /> : <SetPasswordForm />}
+      {!searchParams.has('token') ? (
+        <ErrorAlert
+          message={
+            'Link w który kliknąłeś zawiera błąd, spróbuj wygenerować go ponownie lub skontaktuj się z nami'
+          }
+          buttonText={'Wygeneruj nowy link'}
+          onClick={() => navigate('/forgotPassword')}
+        />
+      ) : (
+        <SetPasswordForm />
+      )}
     </>
   )
 }
 
 export const InitiatePassword = () => {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
   return (
@@ -32,7 +44,17 @@ export const InitiatePassword = () => {
       <Text weight={400} mt={'md'} mb={'md'}>
         Stwórz hasło do swojego konta
       </Text>
-      {!searchParams.has('token') ? <TokenMissingError /> : <SetPasswordForm />}
+      {!searchParams.has('token') ? (
+        <ErrorAlert
+          message={
+            'Link w który kliknąłeś zawiera błąd, spróbuj wygenerować go ponownie lub skontaktuj się z nami'
+          }
+          buttonText={'Wygeneruj nowy link'}
+          onClick={() => navigate('/forgotPassword')}
+        />
+      ) : (
+        <SetPasswordForm />
+      )}
     </>
   )
 }
@@ -62,21 +84,5 @@ const SetPasswordForm = () => {
         </Button>
       </Stack>
     </form>
-  )
-}
-
-const TokenMissingError = () => {
-  return (
-    <Alert title={'Błąd'} icon={<IconAlertCircle size={16} />} color={'red'}>
-      <Stack spacing={'md'}>
-        <Text>
-          Link w który kliknąłeś zawiera błąd, spróbuj wygenerować go ponownie
-          lub skontaktuj się z nami
-        </Text>
-        <Button variant={'outline'} color={'red'} fullWidth>
-          Wygeneruj nowy link
-        </Button>
-      </Stack>
-    </Alert>
   )
 }

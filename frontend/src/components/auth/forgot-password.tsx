@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Title, Text, Stack, TextInput, Button, Alert } from '@mantine/core'
+import { Title, Text, Stack, TextInput, Button } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useNavigate } from 'react-router-dom'
 
 import backendAxios from '../../axios-instance'
 import { validateEmail } from '../../utils/custom-validators'
+import { SuccessAlert } from '../ui/alerts'
 
 export const ForgotPassword = () => {
   const navigate = useNavigate()
@@ -32,7 +33,11 @@ export const ForgotPassword = () => {
         Podaj swój adres email, na który dostaniesz linka to zresetowania hasła
       </Text>
       {success ? (
-        <ForgotPasswordEmailSent onClick={() => navigate('/')} />
+        <SuccessAlert
+          message={'Email z linkiem do zresetowania hasła został wysłany!'}
+          buttonText={'Powrót do logowania'}
+          onClick={() => navigate('/')}
+        />
       ) : (
         <ForgotPasswordForm
           onSubmit={submitHandler}
@@ -98,20 +103,5 @@ const ForgotPasswordForm = ({
         </Button>
       </Stack>
     </form>
-  )
-}
-
-const ForgotPasswordEmailSent = ({ onClick }: { onClick: () => void }) => {
-  return (
-    <Alert color={'teal'}>
-      <Stack spacing={'md'}>
-        <Text mb={'md'}>
-          Email z linkiem do zresetowania hasła został wysłany!
-        </Text>
-        <Button color={'teal'} onClick={onClick}>
-          Powrót do logowania
-        </Button>
-      </Stack>
-    </Alert>
   )
 }
