@@ -8,6 +8,7 @@ import {
   logout,
 } from '../store'
 import { AppLoading } from './app-loading'
+import { AuthController } from './auth'
 
 export const App = () => {
   const dispatch = useAppDispatch()
@@ -21,7 +22,7 @@ export const App = () => {
 
   useEffect(() => {
     dispatch(authInitialize())
-  }, [])
+  }, [dispatch])
 
   if (!appInitialized && appInitializing) {
     return <AppLoading />
@@ -33,6 +34,7 @@ export const App = () => {
 
   return (
     <>
+      <AuthController />
       <span>App</span>
       <button onClick={() => dispatch(logout())}>loguot</button>
     </>
