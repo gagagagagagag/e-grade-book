@@ -43,7 +43,7 @@ export class TokenService {
       type: TokenTypes.Access,
     }
 
-    return this.jwtService.signAsync(payload, { expiresIn: '60m' })
+    return this.jwtService.signAsync(payload, { expiresIn: '180m' })
   }
 
   private async signRefreshToken(id: string, email: string) {
@@ -53,7 +53,7 @@ export class TokenService {
       type: TokenTypes.Refresh,
     }
 
-    return this.jwtService.signAsync(payload, { expiresIn: '30 days' })
+    return this.jwtService.signAsync(payload, { expiresIn: '1 days' })
   }
 
   async signAuthTokens(id: string, email: string) {
