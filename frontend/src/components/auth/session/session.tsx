@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Text } from '@mantine/core'
 import { DateTime } from 'luxon'
 
 import {
@@ -39,7 +40,7 @@ export const Session = () => {
 
   return (
     <>
-      <span>Session time: {sessionCountdown}</span>
+      <Text>Czas do końca sesji: {sessionCountdown}</Text>
     </>
   )
 }

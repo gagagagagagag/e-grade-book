@@ -1,5 +1,4 @@
 import React from 'react'
-import { SWRConfig } from 'swr'
 import ReactDOM from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { MantineProvider } from '@mantine/core'
@@ -18,9 +17,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <ModalsProvider>
           <NotificationsProvider>
             <BrowserRouter>
-              <SWRConfig>
-                <App />
-              </SWRConfig>
+              <App />
             </BrowserRouter>
           </NotificationsProvider>
         </ModalsProvider>

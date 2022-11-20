@@ -1,14 +1,13 @@
-import { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
+import { Route, Routes } from 'react-router-dom'
+import { SWRConfig } from 'swr'
 
-import { AuthenticatePage } from '../pages'
-import {
-  useAppDispatch,
-  useAppSelector,
-  authInitialize,
-  logout,
-} from '../store'
+import backendAxios from '../axios-instance'
+import { AuthenticatePage, DashboardPage } from '../pages'
+import { useAppDispatch, useAppSelector, authInitialize } from '../store'
 import { AppLoading } from './app-loading'
-import { AuthController, Session, SessionController } from './auth'
+import { AuthController, SessionController } from './auth'
+import { AppLayout } from './ui'
 
 export const App = () => {
   const dispatch = useAppDispatch()
@@ -33,12 +32,33 @@ export const App = () => {
   }
 
   return (
-    <>
+    <AppFetcher>
       <AuthController />
       <SessionController />
-      <Session />
-      <span>App</span>
-      <button onClick={() => dispatch(logout())}>loguot</button>
-    </>
+      <Routes>
+        <Route element={<AppLayout />}>
+          <Route path={'/'} element={<DashboardPage />} />
+        </Route>
+      </Routes>
+    </AppFetcher>
   )
+}
+
+const AppFetcher = ({ children }: { children: React.ReactNode }) => {
+  const accessToken = useAppSelector((state) => state.auth.accessToken)
+
+  const fetcher = useCallback(
+    async (url: string) => {
+      const { data } = await backendAxios.get(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+
+      return data
+    },
+    [accessToken]
+  )
+
+  return <SWRConfig value={{ fetcher }}>{children}</SWRConfig>
 }

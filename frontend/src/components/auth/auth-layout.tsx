@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { Grid, Stack, Text, Paper } from '@mantine/core'
 
-import { Logo } from '../logo'
+import { Logo } from '../ui'
 
 export const AuthLayout = () => {
   return (

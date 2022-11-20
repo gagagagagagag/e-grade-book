@@ -1,3 +1,3 @@
 export const SESSION_DEBOUNCE_WAIT = 1000
-export const SESSION_CHECK_DELAY = 800
+export const SESSION_CHECK_DELAY = 500
 export const SESSION_PERIOD_MINUTES = 60
