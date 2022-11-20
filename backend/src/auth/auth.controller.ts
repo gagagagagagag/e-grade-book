@@ -37,7 +37,6 @@ export class AuthController {
     return this.authService.login(currentUser)
   }
 
-  @SerializeUser()
   @IsAuthenticated()
   @Get('/whoami')
   whoAmI(@CurrentUser() currentUser: User) {
