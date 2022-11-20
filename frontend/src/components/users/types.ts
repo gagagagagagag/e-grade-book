@@ -5,28 +5,30 @@ export enum UserRoles {
   Parent = 'ParentUser',
 }
 
-export interface User {
+interface BaseUser {
   name: string
   role: UserRoles
   email: string
   lastLogin?: Date
 }
 
-export interface Student extends User {
+export interface Student extends BaseUser {
   role: UserRoles.Student
 }
 
-export interface Parent extends User {
+export interface Parent extends BaseUser {
   role: UserRoles.Parent
   students?: string[]
 }
 
-export interface Teacher extends User {
+export interface Teacher extends BaseUser {
   role: UserRoles.Teacher
   students?: string[]
   groups?: string[]
 }
 
-export interface Admin extends User {
+export interface Admin extends BaseUser {
   role: UserRoles.Admin
 }
+
+export type User = Student | Admin | Teacher | Parent

@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { SWRConfig } from 'swr'
 
 import backendAxios from '../axios-instance'
 import { AuthenticatePage, DashboardPage } from '../pages'
 import { useAppDispatch, useAppSelector, authInitialize } from '../store'
 import { AppLoading } from './app-loading'
-import { AuthController, SessionController } from './auth'
+import { AuthController, InitializeUser, SessionController } from './auth'
 import { AppLayout } from './ui'
 
 export const App = () => {
@@ -32,15 +32,18 @@ export const App = () => {
   }
 
   return (
-    <AppFetcher>
-      <AuthController />
-      <SessionController />
-      <Routes>
-        <Route element={<AppLayout />}>
-          <Route path={'/'} element={<DashboardPage />} />
-        </Route>
-      </Routes>
-    </AppFetcher>
+    <InitializeUser>
+      <AppFetcher>
+        <AuthController />
+        <SessionController />
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route path={'/'} element={<DashboardPage />} />
+            <Route path={'*'} element={<Navigate to={'/'} />} />
+          </Route>
+        </Routes>
+      </AppFetcher>
+    </InitializeUser>
   )
 }
 

@@ -3,12 +3,14 @@ import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux'
 
 import authReducer from './auth'
 import sessionReducer from './session'
+import userReducer from './user'
 
 const store = configureStore({
   devTools: true,
   reducer: {
     auth: authReducer,
     session: sessionReducer,
+    user: userReducer,
   },
 })
 
@@ -20,5 +22,6 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
 
 export * from './auth'
 export * from './session'
+export * from './user'
 
 export default store

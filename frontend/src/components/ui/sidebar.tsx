@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   Navbar,
   Center,
@@ -10,18 +9,17 @@ import {
 import {
   TablerIcon,
   IconHome2,
-  IconGauge,
-  IconDeviceDesktopAnalytics,
-  IconFingerprint,
-  IconCalendarStats,
-  IconUser,
-  IconSettings,
+  IconSchool,
   IconLogout,
   IconKey,
+  IconUser,
+  IconUsers,
 } from '@tabler/icons'
+import { useLocation, useNavigate } from 'react-router-dom'
 
+import { useCurrentRole, useLogout } from '../auth/hooks'
+import { UserRoles } from '../users/types'
 import { SmallLogo } from './'
-import { useLogout } from '../auth/hooks'
 
 const useStyles = createStyles((theme) => ({
   link: {
@@ -77,28 +75,60 @@ function NavbarLink({ icon: Icon, label, active, onClick }: NavbarLinkProps) {
   )
 }
 
-const mockdata = [
-  { icon: IconHome2, label: 'Home' },
-  { icon: IconGauge, label: 'Dashboard' },
-  { icon: IconDeviceDesktopAnalytics, label: 'Analytics' },
-  { icon: IconCalendarStats, label: 'Releases' },
-  { icon: IconUser, label: 'Account' },
-  { icon: IconFingerprint, label: 'Security' },
-  { icon: IconSettings, label: 'Settings' },
+const pages = [
+  {
+    icon: IconHome2,
+    label: 'Strona Główna',
+    path: '/',
+    allowedRoles: [
+      UserRoles.Admin,
+      UserRoles.Parent,
+      UserRoles.Student,
+      UserRoles.Teacher,
+    ],
+  },
+  {
+    icon: IconSchool,
+    label: 'Lekcje',
+    path: '/lessons',
+    allowedRoles: [
+      UserRoles.Admin,
+      UserRoles.Parent,
+      UserRoles.Student,
+      UserRoles.Teacher,
+    ],
+  },
+  {
+    icon: IconUser,
+    label: 'Uzytkownicy',
+    path: '/user-management',
+    allowedRoles: [UserRoles.Admin],
+  },
+  {
+    icon: IconUsers,
+    label: 'Grupy',
+    path: '/group-management',
+    allowedRoles: [UserRoles.Admin],
+  },
 ]
 
 export const Sidebar = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const role = useCurrentRole()
   const logout = useLogout()
-  const [active, setActive] = useState(2)
 
-  const links = mockdata.map((link, index) => (
-    <NavbarLink
-      {...link}
-      key={link.label}
-      active={index === active}
-      onClick={() => setActive(index)}
-    />
-  ))
+  const links = pages
+    .filter((page) => page.allowedRoles.some((pageRole) => pageRole === role))
+    .map((page) => (
+      <NavbarLink
+        label={page.label}
+        icon={page.icon}
+        key={page.path}
+        active={location.pathname === page.path}
+        onClick={() => navigate(page.path)}
+      />
+    ))
 
   return (
     <Navbar height={'100%'} width={{ base: 80 }} p="md">
