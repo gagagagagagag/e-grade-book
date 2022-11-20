@@ -8,7 +8,7 @@ import {
   logout,
 } from '../store'
 import { AppLoading } from './app-loading'
-import { AuthController } from './auth'
+import { AuthController, Session, SessionController } from './auth'
 
 export const App = () => {
   const dispatch = useAppDispatch()
@@ -35,6 +35,8 @@ export const App = () => {
   return (
     <>
       <AuthController />
+      <SessionController />
+      <Session />
       <span>App</span>
       <button onClick={() => dispatch(logout())}>loguot</button>
     </>

@@ -11,11 +11,18 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import backendAxios from '../../axios-instance'
-import { useAppDispatch, loginSuccess } from '../../store'
+import {
+  useAppDispatch,
+  loginSuccess,
+  useAppSelector,
+  sessionClearTimeout,
+} from '../../store'
 import { validateEmail, validateRequired } from '../../utils/custom-validators'
+import { InfoAlert } from '../ui/alerts'
 import { AuthTokens, AuthCredentials } from './types'
 
 export const Login = () => {
+  const sessionLogout = useAppSelector((state) => state.session.endedByTimeout)
   const [loading, setLoading] = useState(false)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
@@ -30,6 +37,16 @@ export const Login = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (sessionLogout) {
+    return (
+      <InfoAlert
+        message={'Zostałeś wylogowany z powodu zakończenia sesji'}
+        buttonText={'Zaloguj ponownie'}
+        onClick={() => dispatch(sessionClearTimeout())}
+      />
+    )
   }
 
   return (

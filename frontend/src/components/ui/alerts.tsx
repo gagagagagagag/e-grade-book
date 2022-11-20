@@ -1,6 +1,12 @@
 import { ReactNode } from 'react'
 import { Alert, Stack, Text, Button } from '@mantine/core'
-import { IconCircleCheck, IconAlertCircle } from '@tabler/icons'
+import { IconCircleCheck, IconAlertCircle, IconInfoCircle } from '@tabler/icons'
+
+export interface CustomAlertProps {
+  message: string
+  buttonText?: string
+  onClick?: () => void
+}
 
 const CustomAlert = ({
   title,
@@ -35,11 +41,7 @@ export const SuccessAlert = ({
   message,
   buttonText,
   onClick,
-}: {
-  message: string
-  buttonText?: string
-  onClick?: () => void
-}) => {
+}: CustomAlertProps) => {
   return (
     <CustomAlert
       title={'Sukces 🎉'}
@@ -52,15 +54,28 @@ export const SuccessAlert = ({
   )
 }
 
+export const InfoAlert = ({
+  message,
+  buttonText,
+  onClick,
+}: CustomAlertProps) => {
+  return (
+    <CustomAlert
+      title={'Informacja 🤓'}
+      color={'blue'}
+      icon={<IconInfoCircle size={16} />}
+      message={message}
+      buttonText={buttonText}
+      onClick={onClick}
+    />
+  )
+}
+
 export const ErrorAlert = ({
   message,
   buttonText,
   onClick,
-}: {
-  message: string
-  buttonText?: string
-  onClick?: () => void
-}) => {
+}: CustomAlertProps) => {
   return (
     <CustomAlert
       title={'Błąd 😭'}
