@@ -86,13 +86,13 @@ export const UserForm = ({
         )}
         {!form.values.sendEmail && (
           <Checkbox
-            label={'Stwórz hasło dla uzytkownika'}
+            label={'Stwórz hasło dla użytkownika'}
             {...form.getInputProps('createPassword', { type: 'checkbox' })}
           />
         )}
         {!form.values.sendEmail && form.values.createPassword && (
           <PasswordInput
-            label={'Hasło dla uzytkownika'}
+            label={'Hasło dla użytkownika'}
             variant={'filled'}
             {...form.getInputProps('password')}
           />

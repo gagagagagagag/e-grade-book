@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Group, Menu, ActionIcon } from '@mantine/core'
 import {
   IconPencil,
@@ -7,9 +8,9 @@ import {
   IconEye,
   IconUserPlus,
 } from '@tabler/icons'
-import { useState } from 'react'
-import { EditUserModal } from '../data/user-modals'
 
+import { useSendPasswordEmailByAdmin } from '../../auth/hooks'
+import { EditUserModal } from '../data/user-modals'
 import { User, UserRoles } from '../types'
 
 export const UsersActions = ({
@@ -19,6 +20,7 @@ export const UsersActions = ({
   user: User
   onEdit: (updatedUser: User) => void
 }) => {
+  const sendPassowordEmail = useSendPasswordEmailByAdmin()
   const [editUser, setEditUser] = useState(false)
 
   if (user.role === UserRoles.Admin) {
@@ -54,7 +56,12 @@ export const UsersActions = ({
             >
               Edytuj
             </Menu.Item>
-            <Menu.Item icon={<IconMailForward size={16} stroke={1.5} />}>
+            <Menu.Item
+              icon={<IconMailForward size={16} stroke={1.5} />}
+              onClick={() =>
+                sendPassowordEmail(user._id, user.passwordInitiated)
+              }
+            >
               {user.passwordInitiated
                 ? 'Wyślij maila do resetu hasła'
                 : 'Wyślij maila do aktywacji konta'}
