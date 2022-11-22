@@ -90,12 +90,14 @@ const LoginForm = ({
     <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack spacing={'sm'}>
         <TextInput
+          autoComplete={'username'}
           label={'Email'}
           type={'email'}
           variant={'filled'}
           {...form.getInputProps('email')}
         />
         <PasswordInput
+          autoComplete={'current-password'}
           label={'Hasło'}
           variant={'filled'}
           {...form.getInputProps('password')}

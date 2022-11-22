@@ -98,6 +98,7 @@ const SetPasswordForm = ({
     <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack spacing={'sm'}>
         <PasswordInput
+          autoComplete={'new-password'}
           label={'Hasło'}
           variant={'filled'}
           {...form.getInputProps('password')}

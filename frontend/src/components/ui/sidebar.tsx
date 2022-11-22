@@ -15,7 +15,9 @@ import {
   IconUser,
   IconUsers,
 } from '@tabler/icons'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { ChangePasswordModal } from '../auth/change-password'
 
 import { useCurrentRole, useLogout } from '../auth/hooks'
 import { UserRoles } from '../users/types'
@@ -117,6 +119,7 @@ export const Sidebar = () => {
   const location = useLocation()
   const role = useCurrentRole()
   const logout = useLogout()
+  const [changePassword, setChangePassword] = useState(false)
 
   const links = pages
     .filter((page) => page.allowedRoles.some((pageRole) => pageRole === role))
@@ -142,7 +145,15 @@ export const Sidebar = () => {
       </Navbar.Section>
       <Navbar.Section>
         <Stack justify="center" spacing={0}>
-          <NavbarLink icon={IconKey} label="Zmień hasło" />
+          <NavbarLink
+            icon={IconKey}
+            label="Zmień hasło"
+            onClick={() => setChangePassword(true)}
+          />
+          <ChangePasswordModal
+            opened={changePassword}
+            onClose={() => setChangePassword(false)}
+          />
           <NavbarLink
             onClick={logout}
             icon={IconLogout}

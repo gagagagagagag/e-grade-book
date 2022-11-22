@@ -80,6 +80,7 @@ const ForgotPasswordForm = ({
           label={'Email'}
           type={'email'}
           variant={'filled'}
+          autoComplete={'email'}
           {...form.getInputProps('email')}
         />
       </Stack>
