@@ -2,7 +2,6 @@ import { Controller, Post, Body, UseGuards, Get, Patch } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
 
 import { User } from '../users/schemas'
-import { SerializeUser } from '../decorators'
 import { LocalAuthGuard } from './guards'
 import {
   RefreshTokenDto,
