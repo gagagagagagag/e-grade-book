@@ -6,10 +6,12 @@ export enum UserRoles {
 }
 
 interface BaseUser {
+  _id: string
   name: string
   role: UserRoles
   email: string
-  lastLogin?: Date
+  lastLogin?: string
+  passwordInitiated: boolean
 }
 
 export interface Student extends BaseUser {

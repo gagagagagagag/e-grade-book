@@ -6,17 +6,19 @@ import {
   IsString,
   IsEnum,
 } from 'class-validator'
-import { Expose } from 'class-transformer'
+import { Expose, Type } from 'class-transformer'
 
 export class PaginationOptionsDto {
   @Expose()
   @IsOptional()
+  @Type(() => Number)
   @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 0 })
   @Min(1)
   page = 1
 
   @Expose()
   @IsOptional()
+  @Type(() => Number)
   @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 0 })
   @Min(1)
   @Max(100)

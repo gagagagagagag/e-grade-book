@@ -1,4 +1,4 @@
-import { Group, Title } from '@mantine/core'
+import { Container, Group, Title } from '@mantine/core'
 import React from 'react'
 
 export interface PageLayoutProps {
@@ -14,7 +14,7 @@ export const PageLayout = ({ title, children }: PageLayoutProps) => {
           {title}
         </Title>
       </Group>
-      {children}
+      <Container size={'xl'}>{children}</Container>
     </>
   )
 }

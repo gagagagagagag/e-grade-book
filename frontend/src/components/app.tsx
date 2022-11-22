@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { SWRConfig } from 'swr'
 
 import backendAxios from '../axios-instance'
-import { AuthenticatePage, DashboardPage } from '../pages'
+import { AuthenticatePage, DashboardPage, ManageUsersPage } from '../pages'
 import { useAppDispatch, useAppSelector, authInitialize } from '../store'
 import { AppLoading } from './app-loading'
 import { AuthController, InitializeUser, SessionController } from './auth'
@@ -39,6 +38,7 @@ export const App = () => {
         <Routes>
           <Route element={<AppLayout />}>
             <Route path={'/'} element={<DashboardPage />} />
+            <Route path={'/user-management'} element={<ManageUsersPage />} />
             <Route path={'*'} element={<Navigate to={'/'} />} />
           </Route>
         </Routes>
@@ -48,20 +48,20 @@ export const App = () => {
 }
 
 const AppFetcher = ({ children }: { children: React.ReactNode }) => {
+  const [accessTokenIncluded, setAccessTokenIncluded] = useState(false)
   const accessToken = useAppSelector((state) => state.auth.accessToken)
 
-  const fetcher = useCallback(
-    async (url: string) => {
-      const { data } = await backendAxios.get(url, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
+  useEffect(() => {
+    backendAxios.defaults.headers.common['Authorization'] = accessToken
+      ? `Bearer ${accessToken}`
+      : null
 
-      return data
-    },
-    [accessToken]
-  )
+    setAccessTokenIncluded(true)
+  }, [accessToken])
 
-  return <SWRConfig value={{ fetcher }}>{children}</SWRConfig>
+  if (!accessTokenIncluded) {
+    return null
+  }
+
+  return <>{children}</>
 }
