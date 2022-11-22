@@ -4,7 +4,7 @@ import { SkipThrottle } from '@nestjs/throttler'
 import { IsAdmin, IsAuthenticated, CurrentUser } from '../auth/decorators'
 import { PaginationOptions } from '../decorators'
 import { PaginationOptionsDto } from '../dtos'
-import { AssignStudentDto, AssignGroupDto } from './dtos'
+import { AssignStudentDto, AssignGroupDto, UpdateUserDto } from './dtos'
 import { User, UserRoles } from './schemas'
 import { UsersService } from './users.service'
 
@@ -59,5 +59,11 @@ export class UsersController {
       body.studentId,
       body.add
     )
+  }
+
+  @IsAdmin()
+  @Put('/:id')
+  updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
+    return this.usersService.update(id, body)
   }
 }

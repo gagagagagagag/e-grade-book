@@ -19,6 +19,7 @@ import { SelectionIndicator } from './selection-indicator'
 import { UsersFilters } from './users-filters'
 import { UsersActions } from './users-actions'
 import { TableFilters } from '../../table/table-filters'
+import { CreateUserButton } from '../data/user-modals'
 
 export interface UsersTableProps {}
 
@@ -36,7 +37,7 @@ export const UsersTable = () => {
     pageIndex: 0,
     pageSize: 25,
   })
-  const { data, isValidating, error } = useGetUsers({
+  const { data, isValidating, error, mutate } = useGetUsers({
     q,
     page: pagination.pageIndex + 1,
     perPage: pagination.pageSize,
@@ -78,10 +79,32 @@ export const UsersTable = () => {
       }),
       columnHelper.display({
         id: 'actions',
-        cell: ({ row }) => <UsersActions user={row.original} />,
+        cell: ({ row }) => (
+          <UsersActions
+            user={row.original}
+            onEdit={(updatedUser: User) => {
+              mutate((data) => {
+                if (!data) {
+                  return data
+                }
+
+                return {
+                  ...data,
+                  data: data.data.map((user) => {
+                    if (user._id !== updatedUser._id) {
+                      return user
+                    } else {
+                      return updatedUser
+                    }
+                  }),
+                }
+              })
+            }}
+          />
+        ),
       }),
     ]
-  }, [])
+  }, [mutate])
 
   const changeRowSelectionHandler: IntegratedTableSelectionHandler<User> = (
     items,
@@ -137,6 +160,7 @@ export const UsersTable = () => {
                 }}
               />
             </TableFilters>
+            <CreateUserButton onCreated={() => mutate()} />
           </Group>
         }
       />
