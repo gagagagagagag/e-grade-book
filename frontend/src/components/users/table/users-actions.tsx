@@ -12,6 +12,7 @@ import {
 import { useSendPasswordEmailByAdmin } from '../../auth/hooks'
 import { EditUserModal } from '../data/user-modals'
 import { User, UserRoles } from '../types'
+import { AssignStudentsToTeacherModal } from '../data/users-assign-modals'
 
 export const UsersActions = ({
   user,
@@ -22,6 +23,7 @@ export const UsersActions = ({
 }) => {
   const sendPassowordEmail = useSendPasswordEmailByAdmin()
   const [editUser, setEditUser] = useState(false)
+  const [assignToTeacher, setAssignToTeacher] = useState(false)
 
   if (user.role === UserRoles.Admin) {
     return null
@@ -38,6 +40,11 @@ export const UsersActions = ({
           }
         }}
         user={user}
+      />
+      <AssignStudentsToTeacherModal
+        opened={assignToTeacher}
+        onClose={() => setAssignToTeacher(false)}
+        studentIds={[user._id]}
       />
       <Group spacing={0} position="right">
         <ActionIcon>
@@ -67,9 +74,15 @@ export const UsersActions = ({
                 : 'Wyślij maila do aktywacji konta'}
             </Menu.Item>
             {user.role === UserRoles.Student && (
-              <Menu.Item icon={<IconUserPlus size={16} stroke={1.5} />}>
-                Przypisz do
-              </Menu.Item>
+              <>
+                <Menu.Divider />
+                <Menu.Item
+                  icon={<IconUserPlus size={16} stroke={1.5} />}
+                  onClick={() => setAssignToTeacher(true)}
+                >
+                  Przypisz do nauczyciela
+                </Menu.Item>
+              </>
             )}
             <Menu.Divider />
             <Menu.Item icon={<IconTrash size={16} stroke={1.5} />} color="red">

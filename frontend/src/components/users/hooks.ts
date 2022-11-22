@@ -1,6 +1,6 @@
 import useSWR from 'swr'
 
-import { User } from './types'
+import { Parent, Student, Teacher, User, UserRoles } from './types'
 import { fetchWithQuery, PaginationQuery, PaginationResponse } from '../data'
 import backendAxios from '../../axios-instance'
 
@@ -10,6 +10,41 @@ export interface GetUsersQuery extends PaginationQuery {
 
 export const useGetUsers = (query: GetUsersQuery) => {
   return useSWR<PaginationResponse<User>>(['/users', query], fetchWithQuery)
+}
+
+export interface GetAllTeachersQuery {
+  notContainingStudents?: string[]
+  notContainingGroups?: string[]
+}
+
+export const useGetAllTechers = (query: GetAllTeachersQuery) => {
+  return useSWR<Teacher[]>(
+    [`/users/all/${UserRoles.Teacher}`, query],
+    fetchWithQuery
+  )
+}
+
+export interface GetAllParentsQuery {
+  notContainingStudents?: string[]
+}
+
+export const useGetAllParents = (query: GetAllParentsQuery) => {
+  return useSWR<Parent[]>(
+    [`/users/all/${UserRoles.Parent}`, query],
+    fetchWithQuery
+  )
+}
+
+export interface GetAllStudentsQuery {
+  notAssignedToTeacher?: string
+  notAssignedToParent?: string
+}
+
+export const useGetAllStudents = (query: GetAllStudentsQuery) => {
+  return useSWR<Student[]>(
+    [`/users/all/${UserRoles.Student}`, query],
+    fetchWithQuery
+  )
 }
 
 export const useUserCreate = () => {
@@ -30,5 +65,15 @@ export const useUserUpdate = () => {
     const { data } = await backendAxios.put<User>(`/users/${id}`, attrs)
 
     return data
+  }
+}
+
+export const useStudentAssignToTeacherOrParent = () => {
+  return async (studentId: string, targetId: string, add: boolean) => {
+    return backendAxios.put('/users/assignStudent', {
+      studentId,
+      targetId,
+      add,
+    })
   }
 }

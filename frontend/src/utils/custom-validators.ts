@@ -13,3 +13,6 @@ export const validatePassword = (value: string) => {
 
   return null
 }
+
+export const validateMongoId = (value: string) =>
+  validator.isMongoId(value) ? null : 'Wybierz poprawny obiekt'
