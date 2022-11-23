@@ -1,11 +1,12 @@
-import { IsJWT, IsString, MinLength, MaxLength } from 'class-validator'
+import { IsJWT } from 'class-validator'
+
+import { IsPassword } from '../../decorators'
+import { JWT_INVALID } from '../../utils/validation-errors'
 
 export class ResetPasswordDto {
-  @IsJWT()
+  @IsJWT({ message: JWT_INVALID })
   token: string
 
-  @IsString()
-  @MinLength(8)
-  @MaxLength(60)
+  @IsPassword()
   password: string
 }

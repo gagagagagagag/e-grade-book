@@ -6,6 +6,10 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 
+import {
+  EMAIL_ALREADY_IN_USE,
+  USER_NOT_FOUND,
+} from '../utils/validation-errors'
 import { MailerService } from '../mailer/mailer.service'
 import { UsersService } from '../users/users.service'
 import { User } from '../users/schemas'
@@ -44,14 +48,14 @@ export class AuthService {
   async createUser(data: CreateUserDto) {
     if (data.sendEmail && data.password) {
       throw new BadRequestException(
-        "If password is provided, email won't be sent"
+        'Hasło dla użytkownika zostało podane, email nie zostanie wysłany'
       )
     }
 
     const existingUser = await this.usersService.findOneByEmail(data.email)
 
     if (existingUser) {
-      throw new BadRequestException('Email already in use')
+      throw new BadRequestException(EMAIL_ALREADY_IN_USE)
     }
 
     let hashedPassword: string | undefined = undefined
@@ -107,7 +111,7 @@ export class AuthService {
     const existingUser = await this.usersService.findOneByEmail(newEmail)
 
     if (existingUser) {
-      throw new BadRequestException('Email aleady in use')
+      throw new BadRequestException(EMAIL_ALREADY_IN_USE)
     }
 
     await this.usersService.update(user.id, {
@@ -119,7 +123,7 @@ export class AuthService {
 
   async changePassword(user: User, oldPassword: string, newPassword: string) {
     if ((await this.validateUser(user.email, oldPassword)) === null) {
-      throw new BadRequestException('The provided password is incorrect')
+      throw new BadRequestException('Podane hasło jest niepoprawne')
     }
 
     const hash = await this.hashPassword(newPassword)
@@ -147,11 +151,11 @@ export class AuthService {
     } else if (email && !id) {
       user = await this.usersService.findOneByEmail(email)
     } else {
-      throw new BadRequestException('Only id or email should be provided')
+      throw new BadRequestException('Podaj id lub email użytkownika')
     }
 
     if (!user) {
-      throw new NotFoundException('User not found')
+      throw new NotFoundException(USER_NOT_FOUND)
     }
 
     if (!user.passwordInitiated) {

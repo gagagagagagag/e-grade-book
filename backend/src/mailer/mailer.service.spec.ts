@@ -45,7 +45,7 @@ describe('MailerService', () => {
     expect(fakeMailerService.sendMail).toHaveBeenLastCalledWith(
       expect.objectContaining({
         to: email,
-        subject: 'Welcome!',
+        subject: expect.anything(),
         template: EmailTemplates.Welcome,
         context: {
           initPassUrl: `${fakeConfig}/initPassword?token=${token}`,

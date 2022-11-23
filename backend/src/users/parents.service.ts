@@ -18,7 +18,7 @@ export class ParentsService {
     })
 
     if (!parent) {
-      throw new BadRequestException('Student is not assigned to parent')
+      throw new BadRequestException('Uczeń nie jest przypisany do rodzica')
     }
   }
 
@@ -37,8 +37,8 @@ export class ParentsService {
     if (result.modifiedCount === 0) {
       throw new BadRequestException(
         add
-          ? 'User is already assigned to the teacher'
-          : 'User is not assigned to the teacher'
+          ? 'Uczeń już jest przypisany do nauczyciela'
+          : 'Uczeń nie jest przypisany do nauczyciela'
       )
     }
 

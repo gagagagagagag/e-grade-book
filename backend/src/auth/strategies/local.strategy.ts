@@ -17,11 +17,13 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   async validate(username: string, password: string) {
     const user = await this.authService.validateUser(username, password)
     if (!user) {
-      throw new UnauthorizedException()
+      throw new UnauthorizedException('Podany email lub hasło są niepoprawne')
     }
 
     if (!user.passwordInitiated || !user.password) {
-      throw new BadRequestException('Password is not initialized')
+      throw new BadRequestException(
+        'Nie możemy Cię zalogować ponieważ nie stworzyłeś hasła do swojego konta. Przejdź do Zapomniałem hasła aby wysłać maila z linkiem ponownie'
+      )
     }
 
     return user

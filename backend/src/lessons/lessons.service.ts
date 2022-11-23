@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
+import { ROLE_INVALID, LESSON_NOT_FOUND } from '../utils/validation-errors'
 import { GroupsService } from '../groups/groups.service'
 import { ParentUser, User, UserRoles } from '../users/schemas'
 import { UsersService } from '../users/users.service'
@@ -36,10 +37,10 @@ export class LessonsService {
     const queryBuilder = new QueryBuilder()
 
     queryBuilder.throwErrors(
-      paginationOptions.q && "You can't search lessons",
+      paginationOptions.q && 'Nie można wyszukiwać lekcji',
       filters.group &&
         filters.student &&
-        "Can't filter by group and student at the same time"
+        'Nie można filtrować lekcji po grupie i uczniu w tym samym momencie'
     )
 
     queryBuilder.add(
@@ -70,7 +71,7 @@ export class LessonsService {
         queryBuilder.add({ 'participants.student': currentUser.id })
         break
       default:
-        throw new BadRequestException('Current user has an unknown role')
+        throw new BadRequestException(ROLE_INVALID)
     }
 
     const data = await this.lessonModel.find(
@@ -113,14 +114,12 @@ export class LessonsService {
       const [studentId] = participantIds
       if (participantIds.length !== 1) {
         throw new BadRequestException(
-          'Only one student can be attached to a lesson'
+          'Tylko jeden uczeń może zostać dodany do lekcji'
         )
       }
 
       if (studentId !== data.student) {
-        throw new BadRequestException(
-          'Provided student id and participant id do not match'
-        )
+        throw new BadRequestException('Dane lekcji i ucznia nie zgadzają się')
       }
 
       await this.usersService.assertUserAssignedToUser(teacherId, studentId)
@@ -133,9 +132,7 @@ export class LessonsService {
         participants: data.participants,
       })
     } else {
-      throw new BadRequestException(
-        'Either students or group has to be provided, but not both'
-      )
+      throw new BadRequestException('Proszę podać ucznia lub grupę, nie oba')
     }
   }
 
@@ -147,7 +144,7 @@ export class LessonsService {
     const lesson = await this.findOneById(id)
 
     if (!lesson) {
-      throw new NotFoundException('Lesson not found')
+      throw new NotFoundException(LESSON_NOT_FOUND)
     }
 
     if (attrs.participants) {
@@ -159,9 +156,7 @@ export class LessonsService {
         .sort()
 
       if (!isEqual(oldParticipants, newParticipants)) {
-        throw new BadRequestException(
-          "You can't change the lessons participants"
-        )
+        throw new BadRequestException('Nie można zmieniać uczestników lekcji')
       }
     }
 
@@ -176,7 +171,7 @@ export class LessonsService {
     const result = await this.lessonModel.findByIdAndDelete(id)
 
     if (!result) {
-      throw new NotFoundException('Lesson not found')
+      throw new NotFoundException(LESSON_NOT_FOUND)
     }
 
     return result
@@ -194,11 +189,13 @@ export class LessonsService {
     const lesson = await this.findOneById(lessonId)
 
     if (!lesson) {
-      throw new NotFoundException('Lesson not found')
+      throw new NotFoundException(LESSON_NOT_FOUND)
     }
 
     if (lesson.teacher.toString() !== teacherId) {
-      throw new BadRequestException('Lesson was not created by this teacher')
+      throw new BadRequestException(
+        'Lekcja nie była tworzona przez tego nauczyciela'
+      )
     }
   }
 

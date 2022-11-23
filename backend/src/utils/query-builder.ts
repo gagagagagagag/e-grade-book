@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common'
 
-export const DEFAULT_ERROR = 'The provided query is not acceptable'
+export const DEFAULT_ERROR = 'Podane wartości nie są poprawne'
 
 export class QueryBuilder {
   private query: object

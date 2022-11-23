@@ -29,7 +29,7 @@ export class MailerService {
   }
 
   async sendWelcomeEmail(email: string, token: string) {
-    await this.sendEmail(email, 'Welcome!', EmailTemplates.Welcome, {
+    await this.sendEmail(email, 'Witaj!', EmailTemplates.Welcome, {
       initPassUrl: `${this.configService.getOrThrow<string>(
         'APP_URL'
       )}/initPassword?token=${token}`,
@@ -39,7 +39,7 @@ export class MailerService {
   async sendResetPasswordEmail(email: string, token: string) {
     await this.sendEmail(
       email,
-      'Password reset requested',
+      'Zresetuj hasło do swojego konta',
       EmailTemplates.ResetPassword,
       {
         resetPassUrl: `${this.configService.getOrThrow<string>(

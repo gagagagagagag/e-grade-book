@@ -2,28 +2,36 @@ import {
   IsEmail,
   IsEnum,
   NotEquals,
-  IsString,
   IsOptional,
   IsBoolean,
 } from 'class-validator'
 
+import { IsName, IsPassword } from '../../decorators'
 import { UserRoles } from '../../users/schemas'
 
+import {
+  BOOLEAN_INVALID,
+  EMAIL_INVALID,
+  ROLE_INVALID,
+} from '../../utils/validation-errors'
+
 export class CreateUserDto {
-  @IsString()
+  @IsName()
   name: string
 
   @IsOptional()
-  @IsString()
+  @IsPassword()
   password?: string
 
-  @IsEmail()
+  @IsEmail({}, { message: EMAIL_INVALID })
   email: string
 
-  @IsEnum(UserRoles)
-  @NotEquals(UserRoles.Admin)
+  @IsEnum(UserRoles, { message: ROLE_INVALID })
+  @NotEquals(UserRoles.Admin, {
+    message: 'Administratorzy nie mogą być tworzeni',
+  })
   role: UserRoles
 
-  @IsBoolean()
+  @IsBoolean({ message: BOOLEAN_INVALID })
   sendEmail: boolean
 }

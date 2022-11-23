@@ -6,6 +6,11 @@ import {
 import { JwtService } from '@nestjs/jwt'
 import { TokenExpiredError } from 'jsonwebtoken'
 
+import {
+  PASSWORD_NOT_INITIATED,
+  TOKEN_EXPIRED,
+  TOKEN_INVALID,
+} from '../utils/validation-errors'
 import { UsersService } from '../users/users.service'
 import { JwtPayload, TokenTypes } from './token.const'
 
@@ -68,24 +73,22 @@ export class TokenService {
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token)
 
       if (payload.type !== TokenTypes.Refresh) {
-        throw new BadRequestException(
-          'The supplied token is not a refresh token'
-        )
+        throw new BadRequestException(TOKEN_INVALID)
       }
 
       const user = await this.usersService.findOneById(payload.id)
 
       if (!user || user.email !== payload.email) {
-        throw new BadRequestException('The supplied token is invalid')
+        throw new BadRequestException(TOKEN_INVALID)
       }
 
       return payload
     } catch (e) {
       if (e instanceof TokenExpiredError) {
-        throw new UnauthorizedException('Refresh token has expired')
+        throw new UnauthorizedException(TOKEN_EXPIRED)
       }
 
-      throw new BadRequestException('Invalid refresh token')
+      throw new BadRequestException(TOKEN_INVALID)
     }
   }
 
@@ -94,30 +97,26 @@ export class TokenService {
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token)
 
       if (payload.type !== TokenTypes.ResetPassword) {
-        throw new BadRequestException(
-          'The supplied token is not a reset password token'
-        )
+        throw new BadRequestException(TOKEN_INVALID)
       }
 
       const user = await this.usersService.findOneById(payload.id)
 
       if (!user || user.email !== payload.email) {
-        throw new BadRequestException('The supplied token is invalid')
+        throw new BadRequestException(TOKEN_INVALID)
       }
 
       if (!user.passwordInitiated) {
-        throw new BadRequestException(
-          "The user doesn't have an initiated password"
-        )
+        throw new BadRequestException(PASSWORD_NOT_INITIATED)
       }
 
       return payload
     } catch (e) {
       if (e instanceof TokenExpiredError) {
-        throw new UnauthorizedException('The token has expired')
+        throw new UnauthorizedException(TOKEN_EXPIRED)
       }
 
-      throw new BadRequestException('Invalid refresh token')
+      throw new BadRequestException(TOKEN_INVALID)
     }
   }
 
@@ -126,28 +125,26 @@ export class TokenService {
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token)
 
       if (payload.type !== TokenTypes.InitiatePassword) {
-        throw new BadRequestException(
-          'The supplied token is not a initiate password token'
-        )
+        throw new BadRequestException(TOKEN_INVALID)
       }
 
       const user = await this.usersService.findOneById(payload.id)
 
       if (!user || user.email !== payload.email) {
-        throw new BadRequestException('The supplied token is invalid')
+        throw new BadRequestException(TOKEN_INVALID)
       }
 
       if (user.passwordInitiated) {
-        throw new BadRequestException('The password has already been initiated')
+        throw new BadRequestException('Hasło zostało już stworzone')
       }
 
       return payload
     } catch (e) {
       if (e instanceof TokenExpiredError) {
-        throw new UnauthorizedException('The token has expired')
+        throw new UnauthorizedException(TOKEN_EXPIRED)
       }
 
-      throw new BadRequestException('Invalid refresh token')
+      throw new BadRequestException(TOKEN_INVALID)
     }
   }
 }

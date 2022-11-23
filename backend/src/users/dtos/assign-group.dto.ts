@@ -1,12 +1,18 @@
 import { IsMongoId, IsBoolean } from 'class-validator'
 
+import {
+  BOOLEAN_INVALID,
+  GROUP_ID_INVALID,
+  TEACHER_ID_INVALID,
+} from '../../utils/validation-errors'
+
 export class AssignGroupDto {
-  @IsMongoId()
+  @IsMongoId({ message: GROUP_ID_INVALID })
   groupId: string
 
-  @IsMongoId()
+  @IsMongoId({ message: TEACHER_ID_INVALID })
   teacherId: string
 
-  @IsBoolean()
+  @IsBoolean({ message: BOOLEAN_INVALID })
   add: boolean
 }

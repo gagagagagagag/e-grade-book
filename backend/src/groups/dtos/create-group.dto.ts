@@ -1,6 +1,6 @@
-import { IsString } from 'class-validator'
+import { IsName } from '../../decorators'
 
 export class CreateGroupDto {
-  @IsString()
+  @IsName()
   name: string
 }

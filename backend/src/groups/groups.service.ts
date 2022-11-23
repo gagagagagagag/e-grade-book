@@ -15,6 +15,11 @@ import { TeacherUser, User, UserRoles } from '../users/schemas'
 import { QueryBuilder } from '../utils'
 import { Group, GroupDocument } from './group.schema'
 import { UpdateGroupDto } from './dtos'
+import {
+  GROUP_NOT_FOUND,
+  STUDENT_NOT_FOUND,
+  TEACHER_NOT_FOUND,
+} from '../utils/validation-errors'
 
 @Injectable()
 export class GroupsService {
@@ -32,7 +37,7 @@ export class GroupsService {
     const group = await this.findOneById(id)
 
     if (!group) {
-      throw new NotFoundException('Group not found')
+      throw new NotFoundException(GROUP_NOT_FOUND)
     }
 
     return group
@@ -76,7 +81,7 @@ export class GroupsService {
       )
 
       if (!teacher) {
-        throw new NotFoundException('Teacher not found')
+        throw new NotFoundException(TEACHER_NOT_FOUND)
       }
 
       queryBuilder.add({ _id: { $nin: teacher.groups } })
@@ -114,7 +119,7 @@ export class GroupsService {
     })
 
     if (!group) {
-      throw new NotFoundException('Group not found')
+      throw new NotFoundException(GROUP_NOT_FOUND)
     }
 
     return group
@@ -124,7 +129,7 @@ export class GroupsService {
     const result = await this.groupModel.findByIdAndDelete(id)
 
     if (!result) {
-      throw new NotFoundException('Group not found')
+      throw new NotFoundException(GROUP_NOT_FOUND)
     }
 
     return result
@@ -140,7 +145,7 @@ export class GroupsService {
     )
 
     if (groups.length !== groupIds.length) {
-      throw new BadRequestException('Some ids are invalid')
+      throw new BadRequestException('Podano niepoprawne id grup')
     }
 
     return uniq(
@@ -170,7 +175,7 @@ export class GroupsService {
     })
 
     if (!group) {
-      throw new NotFoundException('Group does not contain the provided users')
+      throw new NotFoundException('Grupa nie zawiera podanych uczniów')
     }
   }
 
@@ -181,13 +186,13 @@ export class GroupsService {
     )
 
     if (!student) {
-      throw new NotFoundException('Student not found')
+      throw new NotFoundException(STUDENT_NOT_FOUND)
     }
 
     const group = await this.findOneById(groupId)
 
     if (!group) {
-      throw new NotFoundException('Group not found')
+      throw new NotFoundException(GROUP_NOT_FOUND)
     }
 
     const result = await this.groupModel.updateOne(
@@ -206,8 +211,8 @@ export class GroupsService {
     if (result.modifiedCount === 0) {
       throw new BadRequestException(
         add
-          ? 'User is already assigned to the group'
-          : 'User is not assigned to the teacher'
+          ? 'Uczeń jest już przypisany do nauczyciela'
+          : 'Uczeń nie jest przypisany do nauczyciela'
       )
     }
 

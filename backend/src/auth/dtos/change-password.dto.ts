@@ -1,13 +1,8 @@
-import { IsString, MinLength, MaxLength } from 'class-validator'
-
+import { IsPassword } from '../../decorators'
 export class ChangePasswordDto {
-  @IsString()
-  @MinLength(8)
-  @MaxLength(60)
+  @IsPassword()
   oldPassword: string
 
-  @IsString()
-  @MinLength(8)
-  @MaxLength(60)
+  @IsPassword()
   newPassword: string
 }

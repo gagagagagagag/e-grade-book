@@ -18,7 +18,7 @@ export class TeachersService {
     })
 
     if (!teacher) {
-      throw new BadRequestException('Group is not assigned to teacher')
+      throw new BadRequestException('Grupa nie jest przypisana do nauczyciela')
     }
   }
 
@@ -29,7 +29,7 @@ export class TeachersService {
     })
 
     if (!teacher) {
-      throw new BadRequestException('Student is not assigned to teacher')
+      throw new BadRequestException('Uczeń nie jest przypisany do nauczyciela')
     }
   }
 
@@ -54,8 +54,8 @@ export class TeachersService {
     if (result.modifiedCount === 0) {
       throw new BadRequestException(
         add
-          ? 'Group is already assigned to the teacher'
-          : 'Group is not assigned to the teacher'
+          ? 'Grupa jest już przypisana do nauczyciela'
+          : 'Grupa nie jest przypisana do nauczyciela'
       )
     }
 
@@ -77,8 +77,8 @@ export class TeachersService {
     if (result.modifiedCount === 0) {
       throw new BadRequestException(
         add
-          ? 'User is already assigned to the teacher'
-          : 'User is not assigned to the teacher'
+          ? 'Uczeń jest już przypisana do nauczyciela'
+          : 'Uczeń nie jest przypisany do nauczyciela'
       )
     }
 

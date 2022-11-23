@@ -22,6 +22,14 @@ import {
   UserDocument,
   UserRoles,
 } from './schemas'
+import {
+  GROUP_NOT_FOUND,
+  PARENT_NOT_FOUND,
+  ROLE_INVALID,
+  STUDENT_NOT_FOUND,
+  TEACHER_NOT_FOUND,
+  USER_NOT_FOUND,
+} from '../utils/validation-errors'
 
 @Injectable()
 export class UsersService {
@@ -56,7 +64,7 @@ export class UsersService {
     })
 
     if (!user) {
-      throw new NotFoundException('User not found')
+      throw new NotFoundException(USER_NOT_FOUND)
     }
 
     return user
@@ -108,7 +116,9 @@ export class UsersService {
     const count = await this.countUsersWithRole(userIds, role)
 
     if (count !== userIds.length) {
-      throw new BadRequestException(`All users have to be of type ${role}`)
+      throw new BadRequestException(
+        `Wszyscy użytkownicy muszą mieć rolę ${role}`
+      )
     }
   }
 
@@ -119,7 +129,7 @@ export class UsersService {
     )
 
     if (!teacher) {
-      throw new NotFoundException('Teacher not found')
+      throw new NotFoundException(TEACHER_NOT_FOUND)
     }
 
     await this.teachersService.assertGroupAssignedToTeacher(teacher.id, groupId)
@@ -133,13 +143,13 @@ export class UsersService {
     const user = await this.findUserWithRole(userId, UserRoles.Student)
 
     if (!user) {
-      throw new NotFoundException('User not found')
+      throw new NotFoundException(USER_NOT_FOUND)
     }
 
     const target = await this.findOneById(targetId)
 
     if (!target) {
-      throw new NotFoundException('Target not found')
+      throw new NotFoundException('Nauczyciel/rodzic nie znaleziony')
     }
 
     switch (target.role) {
@@ -163,7 +173,9 @@ export class UsersService {
       case UserRoles.Parent:
         return this.parentsService.assertUserAssignedToParent(targetId, userId)
       default:
-        throw new BadRequestException('Target is not a teacher nor a parent')
+        throw new BadRequestException(
+          'Podane ID nie należy do nauczyciela i rodzica'
+        )
     }
   }
 
@@ -184,7 +196,7 @@ export class UsersService {
     const user = this.userModel.findOne(queryBuilder.getQuery()).exec()
 
     if (!user) {
-      throw new NotFoundException('User not found')
+      throw new NotFoundException(USER_NOT_FOUND)
     }
 
     return user
@@ -259,7 +271,7 @@ export class UsersService {
           )
 
           if (!teacher) {
-            throw new NotFoundException('Teacher not found')
+            throw new NotFoundException(TEACHER_NOT_FOUND)
           }
 
           queryBuilder.add({ _id: { $nin: teacher.students } })
@@ -272,14 +284,14 @@ export class UsersService {
           )
 
           if (!parent) {
-            throw new NotFoundException('Parent not found')
+            throw new NotFoundException(PARENT_NOT_FOUND)
           }
 
           queryBuilder.add({ _id: { $nin: parent.students } })
         }
         break
       default:
-        throw new BadRequestException('Incorrect role provided')
+        throw new BadRequestException(ROLE_INVALID)
     }
 
     queryBuilder.add(
@@ -298,7 +310,7 @@ export class UsersService {
     const group = await this.groupsService.findOneById(groupId)
 
     if (!group) {
-      throw new NotFoundException('Group not found')
+      throw new NotFoundException(GROUP_NOT_FOUND)
     }
 
     const teacher = await this.findUserWithRole<TeacherUser>(
@@ -307,7 +319,7 @@ export class UsersService {
     )
 
     if (!teacher) {
-      throw new NotFoundException('Teacher not found')
+      throw new NotFoundException(TEACHER_NOT_FOUND)
     }
 
     return this.teachersService.assignGroup(teacherId, groupId, add)
@@ -320,13 +332,13 @@ export class UsersService {
     )
 
     if (!student) {
-      throw new NotFoundException('Student not found')
+      throw new NotFoundException(STUDENT_NOT_FOUND)
     }
 
     const target = await this.findOneById(targetId)
 
     if (!target) {
-      throw new NotFoundException('Target not found')
+      throw new NotFoundException('Nauczyciel/rodzic nie znaleziony')
     }
 
     switch (target.role) {
@@ -335,7 +347,9 @@ export class UsersService {
       case UserRoles.Parent:
         return this.parentsService.assignStudent(targetId, studentId, add)
       default:
-        throw new BadRequestException('Target has to be a teacher or a parent')
+        throw new BadRequestException(
+          'Przypisanie jest możliwe tylko dla nauczyciela i rodzica'
+        )
     }
   }
 }

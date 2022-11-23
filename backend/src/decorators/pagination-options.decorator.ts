@@ -21,7 +21,7 @@ export const PaginationOptions = createParamDecorator(
     const errors = await validate(dto)
 
     if (errors.length) {
-      throw new BadRequestException('Wrong pagination options value provided')
+      throw new BadRequestException('Podano złe opcje')
     }
 
     return dto
