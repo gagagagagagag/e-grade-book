@@ -14,7 +14,7 @@ import { UsersService } from '../users/users.service'
 import { TeacherUser, User, UserRoles } from '../users/schemas'
 import { QueryBuilder } from '../utils'
 import { Group, GroupDocument } from './group.schema'
-import { UpdateGroupDto } from './dtos'
+import { CreateGroupDto, UpdateGroupDto } from './dtos'
 import {
   GROUP_NOT_FOUND,
   STUDENT_NOT_FOUND,
@@ -116,8 +116,15 @@ export class GroupsService {
     return this.groupModel.findById(id).exec()
   }
 
-  async create(name: string) {
-    const group = new this.groupModel({ name })
+  async create(attrs: CreateGroupDto) {
+    if (attrs.students) {
+      await this.usersService.assertUsersHaveRole(
+        attrs.students,
+        UserRoles.Student
+      )
+    }
+
+    const group = new this.groupModel(attrs)
 
     return group.save()
   }

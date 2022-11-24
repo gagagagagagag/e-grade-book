@@ -47,7 +47,7 @@ export class GroupsController {
   @IsAdmin()
   @Post()
   createGroup(@Body() body: CreateGroupDto) {
-    return this.groupsService.create(body.name)
+    return this.groupsService.create(body)
   }
 
   @IsAdmin()
