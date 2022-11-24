@@ -1,6 +1,6 @@
 import { Loader, Select, SelectProps } from '@mantine/core'
 
-import { ErrorAlert } from '../ui'
+import { ErrorAlert, SelectAll, SelectPropsWithoutData } from '../ui'
 import {
   GetAllParentsQuery,
   GetAllStudentsQuery,
@@ -9,8 +9,6 @@ import {
   useGetAllStudents,
   useGetAllTechers,
 } from './hooks'
-
-type SelectPropsWithoutData = Omit<SelectProps, 'data'>
 
 export const AllTeachersSelect = ({
   notContainingGroups,
@@ -35,7 +33,7 @@ export const AllTeachersSelect = ({
   }
 
   return (
-    <AllUsersSelect
+    <SelectAll
       {...selectProps}
       data={(data || []).map((teacher) => ({
         label: teacher.name,
@@ -64,7 +62,7 @@ export const AllParentsSelect = ({
   }
 
   return (
-    <AllUsersSelect
+    <SelectAll
       {...selectProps}
       data={(data || []).map((parent) => ({
         label: parent.name,
@@ -95,7 +93,7 @@ export const AllStudentsSelect = ({
   }
 
   return (
-    <AllUsersSelect
+    <SelectAll
       {...selectProps}
       data={(data || []).map((student) => ({
         label: student.name,
@@ -104,12 +102,3 @@ export const AllStudentsSelect = ({
     />
   )
 }
-
-const AllUsersSelect = (props: SelectProps) => (
-  <Select
-    searchable
-    {...props}
-    disabled={props.data.length === 0 || props.disabled}
-    placeholder={props.data.length === 0 ? 'Nie znaleziono' : props.placeholder}
-  />
-)
