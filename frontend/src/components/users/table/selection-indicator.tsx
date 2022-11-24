@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Button, Menu } from '@mantine/core'
 import { countBy } from 'lodash'
 import {
@@ -11,10 +12,10 @@ import {
   IconSelect,
 } from '@tabler/icons'
 
+import { CreateGroupModal } from '../../groups/data/group-modals'
+import { AssignStudentsToTargetModal } from '../data/users-assign-modals'
 import { UserRoles } from '../types'
 import { UsersTableSelection } from './types'
-import { AssignStudentsToTargetModal } from '../data/users-assign-modals'
-import { useState } from 'react'
 
 export const SelectionIndicator = ({
   selection,
@@ -23,6 +24,7 @@ export const SelectionIndicator = ({
   selection: UsersTableSelection[]
   clearSelection: () => void
 }) => {
+  const [createGroupWithUsers, setCreateGroupWithUsers] = useState(false)
   const [assignToTeacher, setAssignToTeacher] = useState(false)
   const [assignToParent, setAssignToParent] = useState(false)
 
@@ -98,7 +100,12 @@ export const SelectionIndicator = ({
           <Menu.Item icon={<IconUsers size={14} />}>
             Przypisz do grupy
           </Menu.Item>
-          <Menu.Item icon={<IconPlus size={14} />}>Stwórz grupę z</Menu.Item>
+          <Menu.Item
+            icon={<IconPlus size={14} />}
+            onClick={() => setCreateGroupWithUsers(true)}
+          >
+            Stwórz grupę z
+          </Menu.Item>
           <Menu.Divider />
           <Menu.Item
             icon={<IconSchool size={14} />}
@@ -121,6 +128,16 @@ export const SelectionIndicator = ({
 
   return (
     <>
+      <CreateGroupModal
+        opened={createGroupWithUsers}
+        withStudents={selection.map((selected) => selected._id)}
+        onClose={(success) => {
+          setCreateGroupWithUsers(false)
+          if (success) {
+            clearSelection()
+          }
+        }}
+      />
       <AssignStudentsToTargetModal
         target={'teacher'}
         opened={assignToTeacher}

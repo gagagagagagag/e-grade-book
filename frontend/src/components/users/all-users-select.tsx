@@ -1,6 +1,12 @@
-import { Loader, Select, SelectProps } from '@mantine/core'
+import { Loader } from '@mantine/core'
 
-import { ErrorAlert, SelectAll, SelectPropsWithoutData } from '../ui'
+import {
+  ErrorAlert,
+  MultiSelectAll,
+  MultiSelectPropsWithoutData,
+  SelectAll,
+  SelectPropsWithoutData,
+} from '../ui'
 import {
   GetAllParentsQuery,
   GetAllStudentsQuery,
@@ -67,6 +73,37 @@ export const AllParentsSelect = ({
       data={(data || []).map((parent) => ({
         label: parent.name,
         value: parent._id,
+      }))}
+    />
+  )
+}
+
+export const AllStudentsMultiSelect = ({
+  notAssignedToParent,
+  notAssignedToTeacher,
+  ...selectProps
+}: MultiSelectPropsWithoutData & GetAllStudentsQuery) => {
+  const { isValidating, data, error } = useGetAllStudents({
+    notAssignedToParent,
+    notAssignedToTeacher,
+  })
+
+  if (error) {
+    return (
+      <ErrorAlert message={'Wystąpił błąd przy pobieraniu danych uczniów'} />
+    )
+  }
+
+  if (isValidating) {
+    return <Loader />
+  }
+
+  return (
+    <MultiSelectAll
+      {...selectProps}
+      data={(data || []).map((student) => ({
+        label: student.name,
+        value: student._id,
       }))}
     />
   )

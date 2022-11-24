@@ -3,6 +3,9 @@ import validator from 'validator'
 export const validateRequired = (value: string) =>
   validator.isLength(value, { min: 1 }) ? null : 'To pole jest wymagane'
 
+export const validateArrayNotEmpty = (value: any[]) =>
+  value.length === 0 ? 'To pole jest wymagane' : null
+
 export const validateEmail = (value: string) =>
   validator.isEmail(value) ? null : 'Niepoprawny adres email'
 

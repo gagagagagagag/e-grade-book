@@ -1,8 +1,9 @@
 import { useCallback } from 'react'
 import useSWR from 'swr'
+import backendAxios from '../../axios-instance'
 
 import { fetchWithQuery, PaginationQuery, PaginationResponse } from '../data'
-import { GroupWithStudents } from './types'
+import { Group, GroupWithStudents } from './types'
 
 export interface GetGroupsQuery extends PaginationQuery {}
 
@@ -42,4 +43,12 @@ export const useGroupNameWithStudents = () => {
     const isEmpty = !studentNames || studentNames.length === 0
     return `${group.name} (${isEmpty ? 'Brak uczniów' : studentNames})`
   }, [])
+}
+
+export const useGroupCreate = () => {
+  return async (attrs: Pick<Group, 'name' | 'students'>) => {
+    const { data } = await backendAxios.post<Group>('/groups', attrs)
+
+    return data
+  }
 }

@@ -8,6 +8,7 @@ import {
 import { IconUser } from '@tabler/icons'
 
 import { IntegratedTable, useTableSelection } from '../../table'
+import { CreateGroupButton } from '../data/group-modals'
 import { ErrorAlert } from '../../ui'
 import { useGetGroups } from '../hooks'
 import { Group as GroupType, GroupStudent, GroupWithStudents } from '../types'
@@ -27,7 +28,7 @@ export const GroupsTable = () => {
     pageIndex: 0,
     pageSize: 25,
   })
-  const { error, isValidating, data } = useGetGroups({
+  const { error, isValidating, data, mutate } = useGetGroups({
     q,
     page: pagination.pageIndex + 1,
     perPage: pagination.pageSize,
@@ -81,7 +82,15 @@ export const GroupsTable = () => {
       onChangePagination={setPagination}
       onChangeSearch={setQ}
       onChangeRowSelection={selectionHandler}
-      extras={<Group spacing={'md'}></Group>}
+      extras={
+        <Group spacing={'md'}>
+          <CreateGroupButton
+            onCreated={() => {
+              mutate()
+            }}
+          />
+        </Group>
+      }
     />
   )
 }
