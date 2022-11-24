@@ -13,7 +13,7 @@ import {
 
 import { UserRoles } from '../types'
 import { UsersTableSelection } from './types'
-import { AssignStudentsToTeacherModal } from '../data/users-assign-modals'
+import { AssignStudentsToTargetModal } from '../data/users-assign-modals'
 import { useState } from 'react'
 
 export const SelectionIndicator = ({
@@ -24,6 +24,7 @@ export const SelectionIndicator = ({
   clearSelection: () => void
 }) => {
   const [assignToTeacher, setAssignToTeacher] = useState(false)
+  const [assignToParent, setAssignToParent] = useState(false)
 
   if (selection.length === 0) {
     return null
@@ -34,7 +35,10 @@ export const SelectionIndicator = ({
     Object.values(counts).filter((count) => count !== 0).length > 1
 
   let button = (
-    <Button leftIcon={<IconUsers size={16} />}>
+    <Button
+      leftIcon={<IconUsers size={16} />}
+      rightIcon={<IconDotsVertical size={16} />}
+    >
       {selection.length} Mieszanych
     </Button>
   )
@@ -45,7 +49,11 @@ export const SelectionIndicator = ({
         counts[UserRoles.Admin] > 1 ? 'Administratorów' : 'Administrator'
 
       button = (
-        <Button color={'pink'} leftIcon={<IconUser size={16} />}>
+        <Button
+          color={'pink'}
+          leftIcon={<IconUser size={16} />}
+          rightIcon={<IconDotsVertical size={16} />}
+        >
           {selection.length} {label}
         </Button>
       )
@@ -53,7 +61,11 @@ export const SelectionIndicator = ({
       const label = counts[UserRoles.Teacher] > 1 ? 'Nauczycieli' : 'Nauczyciel'
 
       button = (
-        <Button color={'orange'} leftIcon={<IconSchool size={16} />}>
+        <Button
+          color={'orange'}
+          leftIcon={<IconSchool size={16} />}
+          rightIcon={<IconDotsVertical size={16} />}
+        >
           {selection.length} {label}
         </Button>
       )
@@ -61,7 +73,11 @@ export const SelectionIndicator = ({
       const label = counts[UserRoles.Parent] > 1 ? 'Rodziców' : 'Rodzic'
 
       button = (
-        <Button color={'teal'} leftIcon={<IconHome size={16} />}>
+        <Button
+          color={'teal'}
+          leftIcon={<IconHome size={16} />}
+          rightIcon={<IconDotsVertical size={16} />}
+        >
           {selection.length} {label}
         </Button>
       )
@@ -91,7 +107,10 @@ export const SelectionIndicator = ({
             Przypisz do nauczyciela
           </Menu.Item>
           <Menu.Divider />
-          <Menu.Item icon={<IconHome size={14} />}>
+          <Menu.Item
+            icon={<IconHome size={14} />}
+            onClick={() => setAssignToParent(true)}
+          >
             Przypisz do rodzica
           </Menu.Item>
           <Menu.Divider />
@@ -102,10 +121,22 @@ export const SelectionIndicator = ({
 
   return (
     <>
-      <AssignStudentsToTeacherModal
+      <AssignStudentsToTargetModal
+        target={'teacher'}
         opened={assignToTeacher}
         onClose={(success) => {
           setAssignToTeacher(false)
+          if (success) {
+            clearSelection()
+          }
+        }}
+        studentIds={selection.map((selected) => selected._id)}
+      />
+      <AssignStudentsToTargetModal
+        target={'parent'}
+        opened={assignToParent}
+        onClose={(success) => {
+          setAssignToParent(false)
           if (success) {
             clearSelection()
           }

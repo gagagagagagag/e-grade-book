@@ -1,39 +1,52 @@
 import { Button, Group, Stack } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { validateMongoId } from '../../../utils/custom-validators'
-import { AllTeachersSelect } from '../all-users-select'
 
-export type AssignUsersToTeacherFormResult = {
-  teacherId: string
+import { validateMongoId } from '../../../utils/custom-validators'
+import { AllParentsSelect, AllTeachersSelect } from '../all-users-select'
+import { AssignTarget } from './users-assign-modals'
+
+export type AssignStudentsToTargetFormResult = {
+  targetId: string
 }
 
-export const AssignUsersToTeacherForm = ({
+export const AssignStudentsToTargetForm = ({
+  target,
   loading,
   onSubmit,
   notContainingStudents,
 }: {
+  target: AssignTarget
   loading: boolean
-  onSubmit: (data: AssignUsersToTeacherFormResult) => void
+  onSubmit: (data: AssignStudentsToTargetFormResult) => void
   notContainingStudents: string[]
 }) => {
   const form = useForm({
     initialValues: {
-      teacherId: '',
+      targetId: '',
     },
     validate: {
-      teacherId: validateMongoId,
+      targetId: validateMongoId,
     },
   })
 
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
       <Stack spacing={'md'}>
-        <AllTeachersSelect
-          label={'Nauczyciel'}
-          variant={'filled'}
-          notContainingStudents={notContainingStudents}
-          {...form.getInputProps('teacherId')}
-        />
+        {target === 'parent' ? (
+          <AllParentsSelect
+            label={'Rodzic'}
+            variant={'filled'}
+            notContainingStudents={notContainingStudents}
+            {...form.getInputProps('targetId')}
+          />
+        ) : (
+          <AllTeachersSelect
+            label={'Nauczyciel'}
+            variant={'filled'}
+            notContainingStudents={notContainingStudents}
+            {...form.getInputProps('targetId')}
+          />
+        )}
       </Stack>
       <Group spacing={'md'} position={'right'} mt={'md'}>
         <Button type={'submit'} loading={loading}>
@@ -43,5 +56,3 @@ export const AssignUsersToTeacherForm = ({
     </form>
   )
 }
-
-export const AssignUsersToParentForm = () => {}

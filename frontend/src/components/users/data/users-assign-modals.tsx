@@ -4,36 +4,40 @@ import { showSuccessNotification } from '../../../utils/custom-notifications'
 
 import { useStudentAssignToTeacherOrParent } from '../hooks'
 import {
-  AssignUsersToTeacherForm,
-  AssignUsersToTeacherFormResult,
+  AssignStudentsToTargetForm,
+  AssignStudentsToTargetFormResult,
 } from './users-assign-forms'
 
-export const AssignStudentsToTeacherModal = ({
+export type AssignTarget = 'teacher' | 'parent'
+
+export const AssignStudentsToTargetModal = ({
+  target,
   studentIds,
   opened,
   onClose,
 }: {
+  target: AssignTarget
   studentIds: string[]
   opened: boolean
   onClose: (success?: boolean) => void
 }) => {
   const [loading, setLoading] = useState(false)
-  const assignToTeacher = useStudentAssignToTeacherOrParent()
+  const assignToTarget = useStudentAssignToTeacherOrParent()
 
-  const assignToTeacherHandler = async (
-    data: AssignUsersToTeacherFormResult
+  const assignToTargetHandler = async (
+    data: AssignStudentsToTargetFormResult
   ) => {
     setLoading(true)
 
     try {
       for (const studentId of studentIds) {
-        await assignToTeacher(studentId, data.teacherId, true)
+        await assignToTarget(studentId, data.targetId, true)
       }
 
       showSuccessNotification(
-        `Przypisano ${
-          studentIds.length > 1 ? 'uczniów' : 'ucznia'
-        } do nauczyciela`
+        `Przypisano ${studentIds.length > 1 ? 'uczniów' : 'ucznia'} do ${
+          target === 'teacher' ? 'nauczyciela' : 'rodzica'
+        }`
       )
       onClose(true)
     } finally {
@@ -42,22 +46,17 @@ export const AssignStudentsToTeacherModal = ({
   }
 
   return (
-    <Modal title={'Przypisz do nauczyciela'} opened={opened} onClose={onClose}>
-      <AssignUsersToTeacherForm
+    <Modal
+      title={`Przypisz do ${target === 'parent' ? 'rodzica' : 'nauczyciela'}`}
+      opened={opened}
+      onClose={onClose}
+    >
+      <AssignStudentsToTargetForm
+        target={target}
         loading={loading}
-        onSubmit={assignToTeacherHandler}
+        onSubmit={assignToTargetHandler}
         notContainingStudents={studentIds}
       />
     </Modal>
   )
 }
-
-export const AssignUsersToParentModal = ({
-  userIds,
-  opened,
-  onClose,
-}: {
-  userIds: string[]
-  opened: boolean
-  onClose: () => void
-}) => {}

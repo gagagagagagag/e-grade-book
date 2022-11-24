@@ -6,13 +6,14 @@ import {
   IconMailForward,
   IconTrash,
   IconEye,
-  IconUserPlus,
+  IconHome,
+  IconSchool,
 } from '@tabler/icons'
 
 import { useSendPasswordEmailByAdmin } from '../../auth/hooks'
 import { EditUserModal } from '../data/user-modals'
 import { User, UserRoles } from '../types'
-import { AssignStudentsToTeacherModal } from '../data/users-assign-modals'
+import { AssignStudentsToTargetModal } from '../data/users-assign-modals'
 
 export const UsersActions = ({
   user,
@@ -24,6 +25,7 @@ export const UsersActions = ({
   const sendPassowordEmail = useSendPasswordEmailByAdmin()
   const [editUser, setEditUser] = useState(false)
   const [assignToTeacher, setAssignToTeacher] = useState(false)
+  const [assignToParent, setAssignToParent] = useState(false)
 
   if (user.role === UserRoles.Admin) {
     return null
@@ -41,9 +43,16 @@ export const UsersActions = ({
         }}
         user={user}
       />
-      <AssignStudentsToTeacherModal
+      <AssignStudentsToTargetModal
+        target={'teacher'}
         opened={assignToTeacher}
         onClose={() => setAssignToTeacher(false)}
+        studentIds={[user._id]}
+      />
+      <AssignStudentsToTargetModal
+        target={'parent'}
+        opened={assignToParent}
+        onClose={() => setAssignToParent(false)}
         studentIds={[user._id]}
       />
       <Group spacing={0} position="right">
@@ -77,10 +86,16 @@ export const UsersActions = ({
               <>
                 <Menu.Divider />
                 <Menu.Item
-                  icon={<IconUserPlus size={16} stroke={1.5} />}
+                  icon={<IconSchool size={16} stroke={1.5} />}
                   onClick={() => setAssignToTeacher(true)}
                 >
                   Przypisz do nauczyciela
+                </Menu.Item>
+                <Menu.Item
+                  icon={<IconHome size={16} stroke={1.5} />}
+                  onClick={() => setAssignToParent(true)}
+                >
+                  Przypisz do rodzica
                 </Menu.Item>
               </>
             )}
