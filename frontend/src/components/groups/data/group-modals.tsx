@@ -2,10 +2,14 @@ import { useState } from 'react'
 import { Button, Modal } from '@mantine/core'
 import { IconPlus } from '@tabler/icons'
 
+import {
+  showSuccessNotification,
+  showWarningNotification,
+} from '../../../utils/custom-notifications'
+import { useGroupAssignToTeacher } from '../../users/hooks'
 import { Group } from '../types'
 import { useGroupCreate } from '../hooks'
 import { GroupForm, GroupFormResult } from './group-form'
-import { showSuccessNotification } from '../../../utils/custom-notifications'
 
 export const CreateGroupButton = ({ onCreated }: { onCreated: () => void }) => {
   const [opened, setOpened] = useState(false)
@@ -39,6 +43,7 @@ export const CreateGroupModal = ({
 }) => {
   const [loading, setLoading] = useState(false)
   const createGroup = useGroupCreate()
+  const assignGroupToTeacher = useGroupAssignToTeacher()
 
   const createGroupHandler = async (data: GroupFormResult) => {
     setLoading(true)
@@ -49,7 +54,21 @@ export const CreateGroupModal = ({
         students: data.students,
       })
 
-      showSuccessNotification('Grupa została stworzona!')
+      if (data.addTeacher && data.teacher) {
+        await assignGroupToTeacher(createdGroup._id, data.teacher, true).then(
+          () =>
+            showSuccessNotification(
+              'Grupa została stworzona i przypisana do nauczyciela!'
+            ),
+          () =>
+            showWarningNotification(
+              'Grupa została stworzona, ale wystąpił błąd podczas przypisywania jej do nauczyciela'
+            )
+        )
+      } else {
+        showSuccessNotification('Grupa została stworzona!')
+      }
+
       onClose(createdGroup)
     } finally {
       setLoading(false)

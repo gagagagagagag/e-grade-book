@@ -63,7 +63,13 @@ export const IntegratedTable = <T,>({
     []
   )
 
-  const numberOfColumns = Object.keys(columns).length
+  const selectionEnabled = !(
+    !rowSelection ||
+    !onChangeRowSelection ||
+    !data?.data
+  )
+  const numberOfColumns =
+    Object.keys(columns).length + (selectionEnabled ? 1 : 0)
 
   return (
     <>

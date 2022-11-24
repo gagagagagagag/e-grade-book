@@ -77,3 +77,13 @@ export const useStudentAssignToTeacherOrParent = () => {
     })
   }
 }
+
+export const useGroupAssignToTeacher = () => {
+  return async (groupId: string, teacherId: string, add: boolean) => {
+    return backendAxios.put('/users/assignGroup', {
+      groupId,
+      teacherId,
+      add,
+    })
+  }
+}

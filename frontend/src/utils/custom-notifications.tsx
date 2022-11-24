@@ -1,5 +1,5 @@
 import { showNotification } from '@mantine/notifications'
-import { IconCircleCheck, IconMoodSad } from '@tabler/icons'
+import { IconAlertTriangle, IconCircleCheck, IconMoodSad } from '@tabler/icons'
 
 export const showSuccessNotification = (
   message: string,
@@ -10,6 +10,17 @@ export const showSuccessNotification = (
     message,
     color: 'teal',
     icon: <IconCircleCheck />,
+  })
+
+export const showWarningNotification = (
+  message: string,
+  { title = 'Uwaga! ⚠️' } = {}
+) =>
+  showNotification({
+    title,
+    message,
+    color: 'yellow',
+    icon: <IconAlertTriangle />,
   })
 
 export const showErrorNotification = (
