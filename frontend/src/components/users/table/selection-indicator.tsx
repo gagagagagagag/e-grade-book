@@ -13,7 +13,10 @@ import {
 } from '@tabler/icons'
 
 import { CreateGroupModal } from '../../groups/data/group-modals'
-import { AssignStudentsToTargetModal } from '../data/users-assign-modals'
+import {
+  AssignStudentsToTargetModal,
+  AssignTarget,
+} from '../data/users-assign-modals'
 import { UserRoles } from '../types'
 import { UsersTableSelection } from './types'
 
@@ -25,8 +28,7 @@ export const SelectionIndicator = ({
   clearSelection: () => void
 }) => {
   const [createGroupWithUsers, setCreateGroupWithUsers] = useState(false)
-  const [assignToTeacher, setAssignToTeacher] = useState(false)
-  const [assignToParent, setAssignToParent] = useState(false)
+  const [assignTo, setAssignTo] = useState<AssignTarget>(null)
 
   if (selection.length === 0) {
     return null
@@ -97,7 +99,10 @@ export const SelectionIndicator = ({
       )
       menu = (
         <>
-          <Menu.Item icon={<IconUsers size={14} />}>
+          <Menu.Item
+            icon={<IconUsers size={14} />}
+            onClick={() => setAssignTo('group')}
+          >
             Przypisz do grupy
           </Menu.Item>
           <Menu.Item
@@ -109,14 +114,14 @@ export const SelectionIndicator = ({
           <Menu.Divider />
           <Menu.Item
             icon={<IconSchool size={14} />}
-            onClick={() => setAssignToTeacher(true)}
+            onClick={() => setAssignTo('teacher')}
           >
             Przypisz do nauczyciela
           </Menu.Item>
           <Menu.Divider />
           <Menu.Item
             icon={<IconHome size={14} />}
-            onClick={() => setAssignToParent(true)}
+            onClick={() => setAssignTo('parent')}
           >
             Przypisz do rodzica
           </Menu.Item>
@@ -139,21 +144,10 @@ export const SelectionIndicator = ({
         }}
       />
       <AssignStudentsToTargetModal
-        target={'teacher'}
-        opened={assignToTeacher}
+        target={assignTo}
+        opened={Boolean(assignTo)}
         onClose={(success) => {
-          setAssignToTeacher(false)
-          if (success) {
-            clearSelection()
-          }
-        }}
-        studentIds={selection.map((selected) => selected._id)}
-      />
-      <AssignStudentsToTargetModal
-        target={'parent'}
-        opened={assignToParent}
-        onClose={(success) => {
-          setAssignToParent(false)
+          setAssignTo(null)
           if (success) {
             clearSelection()
           }

@@ -52,3 +52,13 @@ export const useGroupCreate = () => {
     return data
   }
 }
+
+export const useStudentAssignToGroup = () => {
+  return async (studentId: string, groupId: string, add: boolean) => {
+    return backendAxios.put('/groups/assignStudent', {
+      studentId,
+      groupId,
+      add,
+    })
+  }
+}

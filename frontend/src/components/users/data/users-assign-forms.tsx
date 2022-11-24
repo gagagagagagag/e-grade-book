@@ -2,6 +2,7 @@ import { Button, Group, Stack } from '@mantine/core'
 import { useForm } from '@mantine/form'
 
 import { validateMongoId } from '../../../utils/custom-validators'
+import { AllGroupsSelect } from '../../groups/all-groups-select'
 import { AllParentsSelect, AllTeachersSelect } from '../all-users-select'
 import { AssignTarget } from './users-assign-modals'
 
@@ -39,9 +40,16 @@ export const AssignStudentsToTargetForm = ({
             notContainingStudents={notContainingStudents}
             {...form.getInputProps('targetId')}
           />
-        ) : (
+        ) : target === 'teacher' ? (
           <AllTeachersSelect
             label={'Nauczyciel'}
+            variant={'filled'}
+            notContainingStudents={notContainingStudents}
+            {...form.getInputProps('targetId')}
+          />
+        ) : (
+          <AllGroupsSelect
+            label={'Grupa'}
             variant={'filled'}
             notContainingStudents={notContainingStudents}
             {...form.getInputProps('targetId')}

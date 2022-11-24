@@ -8,12 +8,16 @@ import {
   IconEye,
   IconHome,
   IconSchool,
+  IconUsers,
 } from '@tabler/icons'
 
 import { useSendPasswordEmailByAdmin } from '../../auth/hooks'
 import { EditUserModal } from '../data/user-modals'
 import { User, UserRoles } from '../types'
-import { AssignStudentsToTargetModal } from '../data/users-assign-modals'
+import {
+  AssignStudentsToTargetModal,
+  AssignTarget,
+} from '../data/users-assign-modals'
 
 export const UsersActions = ({
   user,
@@ -24,8 +28,7 @@ export const UsersActions = ({
 }) => {
   const sendPassowordEmail = useSendPasswordEmailByAdmin()
   const [editUser, setEditUser] = useState(false)
-  const [assignToTeacher, setAssignToTeacher] = useState(false)
-  const [assignToParent, setAssignToParent] = useState(false)
+  const [assignTo, setAssignTo] = useState<AssignTarget | null>(null)
 
   if (user.role === UserRoles.Admin) {
     return null
@@ -44,15 +47,9 @@ export const UsersActions = ({
         user={user}
       />
       <AssignStudentsToTargetModal
-        target={'teacher'}
-        opened={assignToTeacher}
-        onClose={() => setAssignToTeacher(false)}
-        studentIds={[user._id]}
-      />
-      <AssignStudentsToTargetModal
-        target={'parent'}
-        opened={assignToParent}
-        onClose={() => setAssignToParent(false)}
+        target={assignTo}
+        opened={Boolean(assignTo)}
+        onClose={() => setAssignTo(null)}
         studentIds={[user._id]}
       />
       <Group spacing={0} position="right">
@@ -87,15 +84,21 @@ export const UsersActions = ({
                 <Menu.Divider />
                 <Menu.Item
                   icon={<IconSchool size={16} stroke={1.5} />}
-                  onClick={() => setAssignToTeacher(true)}
+                  onClick={() => setAssignTo('teacher')}
                 >
                   Przypisz do nauczyciela
                 </Menu.Item>
                 <Menu.Item
                   icon={<IconHome size={16} stroke={1.5} />}
-                  onClick={() => setAssignToParent(true)}
+                  onClick={() => setAssignTo('parent')}
                 >
                   Przypisz do rodzica
+                </Menu.Item>
+                <Menu.Item
+                  icon={<IconUsers size={16} stroke={1.5} />}
+                  onClick={() => setAssignTo('group')}
+                >
+                  Przypisz do grupy
                 </Menu.Item>
               </>
             )}

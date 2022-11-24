@@ -1,14 +1,15 @@
 import { Modal } from '@mantine/core'
 import { useState } from 'react'
-import { showSuccessNotification } from '../../../utils/custom-notifications'
 
+import { showSuccessNotification } from '../../../utils/custom-notifications'
+import { useStudentAssignToGroup } from '../../groups/hooks'
 import { useStudentAssignToTeacherOrParent } from '../hooks'
 import {
   AssignStudentsToTargetForm,
   AssignStudentsToTargetFormResult,
 } from './users-assign-forms'
 
-export type AssignTarget = 'teacher' | 'parent'
+export type AssignTarget = 'teacher' | 'parent' | 'group' | null
 
 export const AssignStudentsToTargetModal = ({
   target,
@@ -23,6 +24,11 @@ export const AssignStudentsToTargetModal = ({
 }) => {
   const [loading, setLoading] = useState(false)
   const assignToTarget = useStudentAssignToTeacherOrParent()
+  const assignToGroup = useStudentAssignToGroup()
+
+  if (!target) {
+    return null
+  }
 
   const assignToTargetHandler = async (
     data: AssignStudentsToTargetFormResult
@@ -31,12 +37,20 @@ export const AssignStudentsToTargetModal = ({
 
     try {
       for (const studentId of studentIds) {
-        await assignToTarget(studentId, data.targetId, true)
+        if (target === 'group') {
+          await assignToGroup(studentId, data.targetId, true)
+        } else {
+          await assignToTarget(studentId, data.targetId, true)
+        }
       }
 
       showSuccessNotification(
         `Przypisano ${studentIds.length > 1 ? 'uczniów' : 'ucznia'} do ${
-          target === 'teacher' ? 'nauczyciela' : 'rodzica'
+          target === 'teacher'
+            ? 'nauczyciela'
+            : target === 'parent'
+            ? 'rodzica'
+            : 'grupy'
         }`
       )
       onClose(true)
@@ -47,7 +61,13 @@ export const AssignStudentsToTargetModal = ({
 
   return (
     <Modal
-      title={`Przypisz do ${target === 'parent' ? 'rodzica' : 'nauczyciela'}`}
+      title={`Przypisz do ${
+        target === 'parent'
+          ? 'rodzica'
+          : target === 'teacher'
+          ? 'nauczyciela'
+          : 'grupy'
+      }`}
       opened={opened}
       onClose={onClose}
     >
