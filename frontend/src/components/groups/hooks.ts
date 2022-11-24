@@ -1,10 +1,13 @@
 import useSWR from 'swr'
 
 import { fetchWithQuery, PaginationQuery, PaginationResponse } from '../data'
-import { Group } from './types'
+import { GroupWithStudents } from './types'
 
 export interface GetGroupsQuery extends PaginationQuery {}
 
 export const useGetGroups = (query: GetGroupsQuery) => {
-  return useSWR<PaginationResponse<Group>>(['/groups', query], fetchWithQuery)
+  return useSWR<PaginationResponse<GroupWithStudents>>(
+    ['/groups', query],
+    fetchWithQuery
+  )
 }

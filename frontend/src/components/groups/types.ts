@@ -6,5 +6,6 @@ export interface Group<T = string> {
   students: T[]
 }
 
-export interface GroupWithStudents
-  extends Group<Pick<Student, '_id' | 'name'>> {}
+export interface GroupStudent extends Pick<Student, '_id' | 'name' | 'role'> {}
+
+export interface GroupWithStudents extends Group<GroupStudent> {}

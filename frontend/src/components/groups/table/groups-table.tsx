@@ -1,15 +1,16 @@
 import { useState, useMemo } from 'react'
-import { Group } from '@mantine/core'
+import { Badge, Group, Text } from '@mantine/core'
 import {
   SortingState,
   PaginationState,
   createColumnHelper,
 } from '@tanstack/react-table'
+import { IconUser } from '@tabler/icons'
 
 import { IntegratedTable, useTableSelection } from '../../table'
 import { ErrorAlert } from '../../ui'
 import { useGetGroups } from '../hooks'
-import { Group as GroupType } from '../types'
+import { Group as GroupType, GroupStudent, GroupWithStudents } from '../types'
 import { GroupsTableSelection } from './types'
 
 export const GroupsTable = () => {
@@ -44,9 +45,21 @@ export const GroupsTable = () => {
     return [
       columnHelper.accessor('name', {
         id: 'name',
+        header: 'Nazwa',
+        cell: ({ getValue }) => (
+          <Text weight={500} size={'sm'}>
+            {getValue()}
+          </Text>
+        ),
       }),
       columnHelper.accessor('students', {
         id: 'students',
+        header: 'Uczniowie',
+        cell: ({ getValue }) => (
+          <ShowStudents
+            students={(getValue() as unknown as GroupStudent[]) ?? []}
+          />
+        ),
       }),
     ]
   }, [])
@@ -56,7 +69,7 @@ export const GroupsTable = () => {
   }
 
   return (
-    <IntegratedTable
+    <IntegratedTable<GroupWithStudents>
       loading={isValidating}
       search={q}
       data={data}
@@ -70,5 +83,20 @@ export const GroupsTable = () => {
       onChangeRowSelection={selectionHandler}
       extras={<Group spacing={'md'}></Group>}
     />
+  )
+}
+
+const ShowStudents = ({ students }: { students: GroupStudent[] }) => {
+  return (
+    <Group>
+      {students.map((student) => (
+        <Badge key={student._id}>
+          <Group align={'center'} spacing={'xs'}>
+            <IconUser size={14} stroke={1} />
+            <Text size={'xs'}>{student.name}</Text>
+          </Group>
+        </Badge>
+      ))}
+    </Group>
   )
 }
