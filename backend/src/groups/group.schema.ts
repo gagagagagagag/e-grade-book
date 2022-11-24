@@ -10,7 +10,7 @@ export class Group extends BaseSchema {
   @Prop({ required: true, index: 'text' })
   name: string
 
-  @Prop({ type: Types.ObjectId, ref: 'StudentUser' })
+  @Prop({ type: [Types.ObjectId], ref: 'StudentUser' })
   students?: string[]
 }
 

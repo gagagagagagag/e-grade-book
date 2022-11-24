@@ -9,7 +9,7 @@ export type ParentUserDocument = ParentUser & Document
 export class ParentUser extends UserBase {
   role: UserRoles.Parent
 
-  @Prop({ type: Types.ObjectId, ref: 'StudentUser' })
+  @Prop({ type: [Types.ObjectId], ref: 'StudentUser' })
   students?: string[]
 }
 
