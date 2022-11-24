@@ -1,6 +1,6 @@
 import { IsEmail, IsOptional } from 'class-validator'
 
-import { IsName } from '../../decorators'
+import { IsName } from '../../decorators/custom-validators.decorator'
 import { EMAIL_INVALID } from '../../utils/validation-errors'
 
 export class UpdateUserDto {

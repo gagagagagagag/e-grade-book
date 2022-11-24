@@ -1,5 +1,5 @@
-import { IsString, MaxLength, MinLength } from 'class-validator'
 import { applyDecorators } from '@nestjs/common'
+import { IsString, MaxLength, MinLength } from 'class-validator'
 
 import {
   PASSOWRD_TOO_LONG,
