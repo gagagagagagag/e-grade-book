@@ -21,8 +21,6 @@ import { UsersActions } from './users-actions'
 import { TableFilters } from '../../table/table-filters'
 import { CreateUserButton } from '../data/user-modals'
 
-export interface UsersTableProps {}
-
 export const UsersTable = () => {
   const [roleFilter, setRoleFilter] = useState<UserRoles | undefined>(undefined)
   const [q, setQ] = useState('')
