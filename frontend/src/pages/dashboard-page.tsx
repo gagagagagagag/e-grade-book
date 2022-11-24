@@ -5,7 +5,11 @@ export const DashboardPage = () => {
   const user = useCurrentUser()
 
   return (
-    <PageLayout title={`Witaj, ${user.name}👋🏻`}>
+    <PageLayout
+      title={`Witaj, ${user.name}👋🏻`}
+      canGoBack={false}
+      clearNavigation
+    >
       <span style={{ display: 'inline-block', marginBottom: '4000px' }}>
         Dashboard
       </span>
