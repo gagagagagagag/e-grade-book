@@ -1,5 +1,4 @@
-import { useMemo, useState } from 'react'
-import { differenceBy, uniqBy } from 'lodash'
+import { useCallback, useMemo, useState } from 'react'
 import { Text, Group } from '@mantine/core'
 import {
   createColumnHelper,
@@ -8,8 +7,7 @@ import {
 } from '@tanstack/react-table'
 import { DateTime } from 'luxon'
 
-import { IntegratedTableSelectionHandler } from '../../table/types'
-import { IntegratedTable } from '../../table/integrated-table'
+import { IntegratedTable, TableFilters, useTableSelection } from '../../table'
 import { ErrorAlert } from '../../ui'
 import { useGetUsers } from '../hooks'
 import { User, UserRoles } from '../types'
@@ -18,13 +16,18 @@ import { UsersTableSelection } from './types'
 import { SelectionIndicator } from './selection-indicator'
 import { UsersFilters } from './users-filters'
 import { UsersActions } from './users-actions'
-import { TableFilters } from '../../table/table-filters'
 import { CreateUserButton } from '../data/user-modals'
 
 export const UsersTable = () => {
   const [roleFilter, setRoleFilter] = useState<UserRoles | undefined>(undefined)
   const [q, setQ] = useState('')
-  const [selection, setSelection] = useState<UsersTableSelection[]>([])
+  const { selection, selectionHandler, clearSelectionHandler } =
+    useTableSelection<UsersTableSelection>(
+      useCallback(
+        (item: UsersTableSelection) => ({ _id: item._id, role: item.role }),
+        []
+      )
+    )
   const [sorting, setSorting] = useState<SortingState>([
     {
       id: 'name',
@@ -104,24 +107,6 @@ export const UsersTable = () => {
     ]
   }, [mutate])
 
-  const changeRowSelectionHandler: IntegratedTableSelectionHandler<User> = (
-    items,
-    mode
-  ) => {
-    setSelection((prev) => {
-      const mappedItems = items.map((item) => ({
-        _id: item._id,
-        role: item.role,
-      }))
-      const newState =
-        mode === 'add'
-          ? uniqBy([...mappedItems, ...prev], '_id')
-          : differenceBy(prev, mappedItems, '_id')
-
-      return newState
-    })
-  }
-
   if (error) {
     return <ErrorAlert message={'Wystąpił błąd podczas pobierania danych'} />
   }
@@ -139,12 +124,12 @@ export const UsersTable = () => {
         onChangeSort={setSorting}
         onChangePagination={setPagination}
         onChangeSearch={setQ}
-        onChangeRowSelection={changeRowSelectionHandler}
+        onChangeRowSelection={selectionHandler}
         extras={
           <Group spacing={'md'}>
             <SelectionIndicator
               selection={selection}
-              clearSelection={() => setSelection([])}
+              clearSelection={clearSelectionHandler}
             />
             <TableFilters
               active={Boolean(roleFilter)}
@@ -154,7 +139,7 @@ export const UsersTable = () => {
                 role={roleFilter}
                 onRoleChange={(value) => {
                   setRoleFilter(value)
-                  setSelection([])
+                  clearSelectionHandler()
                 }}
               />
             </TableFilters>
