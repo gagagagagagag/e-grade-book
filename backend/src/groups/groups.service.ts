@@ -34,7 +34,12 @@ export class GroupsService {
       await this.usersService.assertGroupAssignedToUser(currentUser.id, id)
     }
 
-    const group = await this.findOneById(id)
+    const group = await this.groupModel.findById(id, null, {
+      populate: {
+        path: 'students',
+        select: '_id name role',
+      },
+    })
 
     if (!group) {
       throw new NotFoundException(GROUP_NOT_FOUND)
@@ -46,11 +51,18 @@ export class GroupsService {
   async getGroups(paginationOptions: PaginationOptionsDto) {
     const queryBuilder = new QueryBuilder(paginationOptions.getBaseQuery())
 
-    const data = await this.groupModel.find(
-      queryBuilder.getQuery(),
-      null,
-      paginationOptions.createFindOptions()
-    )
+    const data = await this.groupModel
+      .find(
+        queryBuilder.getQuery(),
+        null,
+        paginationOptions.createFindOptions({
+          populate: {
+            path: 'students',
+            select: '_id name role',
+          },
+        })
+      )
+      .populate('students', '_id name role')
 
     const count = await this.groupModel.countDocuments(queryBuilder.getQuery())
 
@@ -89,6 +101,10 @@ export class GroupsService {
 
     return this.groupModel.find(queryBuilder.getQuery(), null, {
       lean: true,
+      populate: {
+        path: 'students',
+        select: '_id name role',
+      },
     })
   }
 

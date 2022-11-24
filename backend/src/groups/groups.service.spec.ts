@@ -51,7 +51,7 @@ describe('GroupsService', () => {
 
   describe('#getGoup', () => {
     it('should check if the group is assigned to the teacher', async () => {
-      jest.spyOn(service, 'findOneById').mockResolvedValue(true as any)
+      fakeGroupModel.findById = jest.fn().mockResolvedValue(true)
 
       service.getGroup(id, { role: UserRoles.Teacher } as unknown as User)
 
@@ -59,7 +59,7 @@ describe('GroupsService', () => {
     })
 
     it('should throw if the group is not found', async () => {
-      jest.spyOn(service, 'findOneById').mockResolvedValue(null)
+      fakeGroupModel.findById = jest.fn().mockResolvedValue(null)
 
       await expect(
         service.getGroup(id, { role: UserRoles.Admin } as unknown as User)
