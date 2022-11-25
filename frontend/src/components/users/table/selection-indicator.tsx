@@ -162,7 +162,7 @@ export const SelectionIndicator = ({
           <Menu.Item icon={<IconSelect size={14} />} onClick={clearSelection}>
             Wyczyść wybór
           </Menu.Item>
-          <Menu.Item color={'red'} icon={<IconTrash size={14} />}>
+          <Menu.Item color={'red'} icon={<IconTrash size={14} />} disabled>
             Usuń wybrane
           </Menu.Item>
         </Menu.Dropdown>

@@ -47,6 +47,7 @@ export const GroupsActions = ({
             <Menu.Item
               icon={<IconTrash size={16} stroke={1.5} />}
               color={'red'}
+              disabled
             >
               Usuń
             </Menu.Item>

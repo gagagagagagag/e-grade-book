@@ -14,10 +14,11 @@ import { useGetGroups } from '../hooks'
 import { Group as GroupType, GroupStudent, GroupWithStudents } from '../types'
 import { GroupsTableSelection } from './types'
 import { GroupsActions } from './groups-actions'
+import { SelectionIndicator } from './selection-indicator'
 
 export const GroupsTable = () => {
   const [q, setQ] = useState('')
-  const { selection, selectionHandler } =
+  const { selection, selectionHandler, clearSelectionHandler } =
     useTableSelection<GroupsTableSelection>()
   const [sorting, setSorting] = useState<SortingState>([
     {
@@ -110,6 +111,10 @@ export const GroupsTable = () => {
       onChangeRowSelection={selectionHandler}
       extras={
         <Group spacing={'md'}>
+          <SelectionIndicator
+            selection={selection}
+            clearSelection={clearSelectionHandler}
+          />
           <CreateGroupButton
             onCreated={() => {
               mutate()
