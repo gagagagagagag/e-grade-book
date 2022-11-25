@@ -3,6 +3,7 @@ import useSWR from 'swr'
 import backendAxios from '../../axios-instance'
 
 import { fetchWithQuery, PaginationQuery, PaginationResponse } from '../data'
+import { PopulatedUser } from '../users/types'
 import { Group, GroupWithStudents } from './types'
 
 export interface GetGroupsQuery extends PaginationQuery {}
@@ -23,13 +24,13 @@ export const useGetAllGroups = (query: GetAllGroupsQuery) => {
   return useSWR<GroupWithStudents[]>(['/groups/all', query], fetchWithQuery)
 }
 
-export const useGroupNameWithStudents = () => {
-  return useCallback((group: GroupWithStudents | null) => {
-    if (!group) {
-      return 'Brak grupy'
+export const useCombineGroupStudentNames = () => {
+  return useCallback((students?: PopulatedUser[] | null) => {
+    if (!students || !students.length) {
+      return ''
     }
 
-    const studentNames = group.students?.reduce((res, student) => {
+    const studentNames = students.reduce((res, student) => {
       if (student && student.name) {
         if (!res.length) {
           res = student.name
@@ -40,9 +41,26 @@ export const useGroupNameWithStudents = () => {
       return res
     }, '')
 
-    const isEmpty = !studentNames || studentNames.length === 0
-    return `${group.name} (${isEmpty ? 'Brak uczniów' : studentNames})`
+    return studentNames
   }, [])
+}
+
+export const useGroupNameWithStudents = () => {
+  const combineStudentNames = useCombineGroupStudentNames()
+
+  return useCallback(
+    (group: GroupWithStudents | null) => {
+      if (!group) {
+        return 'Brak grupy'
+      }
+
+      const studentNames = combineStudentNames(group.students)
+
+      const isEmpty = !studentNames || studentNames.length === 0
+      return `${group.name} (${isEmpty ? 'Brak uczniów' : studentNames})`
+    },
+    [combineStudentNames]
+  )
 }
 
 export const useGroupCreate = () => {

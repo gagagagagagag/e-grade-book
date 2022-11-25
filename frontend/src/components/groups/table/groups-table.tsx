@@ -1,17 +1,16 @@
 import { useState, useMemo } from 'react'
-import { Badge, Group, Text } from '@mantine/core'
+import { Group, Text } from '@mantine/core'
 import {
   SortingState,
   PaginationState,
   createColumnHelper,
 } from '@tanstack/react-table'
-import { IconUser } from '@tabler/icons'
 
 import { IntegratedTable, useTableSelection } from '../../table'
 import { CreateGroupButton } from '../data/group-modals'
 import { PopulatedUser } from '../../users/types'
 import { ErrorAlert } from '../../ui'
-import { useGetGroups } from '../hooks'
+import { useCombineGroupStudentNames, useGetGroups } from '../hooks'
 import { GroupWithStudents } from '../types'
 import { GroupsTableSelection } from './types'
 import { GroupsActions } from './groups-actions'
@@ -124,16 +123,13 @@ export const GroupsTable = () => {
 }
 
 const ShowStudents = ({ students }: { students: PopulatedUser[] }) => {
+  const combineStudentNames = useCombineGroupStudentNames()
+
+  const combinedNames = combineStudentNames(students)
+
   return (
-    <Group>
-      {students.map((student) => (
-        <Badge key={student._id} size={'md'} variant={'light'} color={'violet'}>
-          <Group align={'center'} spacing={'xs'}>
-            <IconUser size={14} stroke={3} />
-            <Text size={'xs'}>{student.name}</Text>
-          </Group>
-        </Badge>
-      ))}
-    </Group>
+    <Text size={'sm'} weight={400}>
+      {combinedNames ? combinedNames : 'Brak'}
+    </Text>
   )
 }
