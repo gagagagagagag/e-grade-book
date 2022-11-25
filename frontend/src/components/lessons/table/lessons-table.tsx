@@ -9,12 +9,15 @@ import {
 import { IconUser, IconUsers } from '@tabler/icons'
 
 import { useCurrentRole } from '../../auth/hooks'
-import { IntegratedTable } from '../../table'
+import { IntegratedTable, TableFilters } from '../../table'
 import { UserRoles } from '../../users/types'
 import { ErrorAlert } from '../../ui'
-import { useGetLessons } from '../hooks'
+import { LessonsExportButton } from '../lessons-export'
 import { LessonWithUsers } from '../types'
+import { useGetLessons } from '../hooks'
 import { LessonsActions } from './lessons-actions'
+import { LessonsFilters } from './lessons-filters'
+import { LessonsStudent } from './lessons-student'
 
 export const LessonsTable = () => {
   const currentRole = useCurrentRole()
@@ -88,7 +91,15 @@ export const LessonsTable = () => {
       pagination={pagination}
       onChangeSort={setSorting}
       onChangePagination={setPagination}
-      extras={<Group spacing={'md'}></Group>}
+      extras={
+        <Group spacing={'md'}>
+          <LessonsStudent currentRole={currentRole} />
+          <TableFilters active={false} onReset={() => {}}>
+            <LessonsFilters currentRole={currentRole} />
+          </TableFilters>
+          <LessonsExportButton currentRole={currentRole} />
+        </Group>
+      }
     />
   )
 }
