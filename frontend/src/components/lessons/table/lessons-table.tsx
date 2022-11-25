@@ -93,9 +93,9 @@ export const LessonsTable = () => {
       ]
     } else if (currentRole === UserRoles.Teacher) {
       return [targetColumn, dateColumn, durationColumn, actionsColumn]
+    } else {
+      return [dateColumn, durationColumn]
     }
-
-    return []
   }, [currentRole])
 
   if (error) {
@@ -120,7 +120,11 @@ export const LessonsTable = () => {
       onChangePagination={setPagination}
       extras={
         <Group spacing={'md'}>
-          <LessonsStudent currentRole={currentRole} />
+          <LessonsStudent
+            currentRole={currentRole}
+            studentFilter={studentFilter}
+            onStudentFilterChange={setStudentFilter}
+          />
           <TableFilters
             active={filtersActive}
             onReset={() => {

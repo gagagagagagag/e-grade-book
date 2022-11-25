@@ -1,10 +1,11 @@
 import { DateRangePicker, DateRangePickerValue } from '@mantine/dates'
 import { DateTime } from 'luxon'
 
-import { AllGroupsSelect } from '../../groups/all-groups-select'
+import { AllGroupsSelect, MyGroupsSelect } from '../../groups/all-groups-select'
 import {
   AllStudentsSelect,
   AllTeachersSelect,
+  MyStudentsSelect,
 } from '../../users/all-users-select'
 import { UserRoles } from '../../users/types'
 
@@ -56,7 +57,15 @@ export const LessonsFilters = ({
           variant={'filled'}
           clearable
         />
-      ) : currentRole === UserRoles.Teacher ? null : null}
+      ) : currentRole === UserRoles.Teacher ? (
+        <MyGroupsSelect
+          value={groupFilter}
+          onChange={onGroupFilterChange}
+          label={'Grupa'}
+          variant={'filled'}
+          clearable
+        />
+      ) : null}
       {currentRole === UserRoles.Admin ? (
         <AllStudentsSelect
           value={studentFilter}
@@ -65,7 +74,15 @@ export const LessonsFilters = ({
           variant={'filled'}
           clearable
         />
-      ) : currentRole === UserRoles.Student ? null : null}
+      ) : currentRole === UserRoles.Teacher ? (
+        <MyStudentsSelect
+          value={studentFilter}
+          onChange={onStudentFilterChange}
+          label={'Uczeń'}
+          variant={'filled'}
+          clearable
+        />
+      ) : null}
     </>
   )
 }

@@ -1,4 +1,4 @@
-import { Loader, SelectProps } from '@mantine/core'
+import { Loader } from '@mantine/core'
 
 import { ErrorAlert, SelectAll, SelectPropsWithoutData } from '../ui'
 import {
@@ -8,7 +8,7 @@ import {
   useGetMyGroups,
 } from './hooks'
 
-export const MyGroupsSelect = (selectProps: SelectProps) => {
+export const MyGroupsSelect = (selectProps: SelectPropsWithoutData) => {
   const getGroupName = useGroupNameWithStudents()
   const { data, isValidating, error } = useGetMyGroups()
 

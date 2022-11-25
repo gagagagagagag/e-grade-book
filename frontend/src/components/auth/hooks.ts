@@ -3,11 +3,12 @@ import { showNotification, hideNotification } from '@mantine/notifications'
 import backendAxios from '../../axios-instance'
 import { logout, useAppDispatch, useAppSelector } from '../../store'
 import { showSuccessNotification } from '../../utils/custom-notifications'
+import { User } from '../users/types'
 
-export const useCurrentUser = () => {
+export const useCurrentUser = <T = User>() => {
   const user = useAppSelector((state) => state.user.user)
 
-  return user!
+  return user as T
 }
 
 export const useCurrentRole = () => {

@@ -1,4 +1,4 @@
-import { Loader, SelectProps } from '@mantine/core'
+import { Loader } from '@mantine/core'
 
 import {
   ErrorAlert,
@@ -79,7 +79,7 @@ export const AllParentsSelect = ({
   )
 }
 
-export const MyStudentsSelect = (selectProps: SelectProps) => {
+export const MyStudentsSelect = (selectProps: SelectPropsWithoutData) => {
   const { isValidating, data, error } = useGetMyStudents()
 
   if (error) {
