@@ -34,3 +34,5 @@ export interface Admin extends BaseUser {
 }
 
 export type User = Student | Admin | Teacher | Parent
+
+export interface PopulatedUser extends Pick<User, '_id' | 'name' | 'role'> {}

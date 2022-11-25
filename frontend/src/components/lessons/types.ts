@@ -1,11 +1,13 @@
-export interface Lesson {
+import { PopulatedUser } from '../users/types'
+
+export interface Lesson<T = string, S = string, G = string> {
   _id: string
 
-  teacher: string
+  teacher: T
 
-  student?: string
+  student?: S
 
-  group?: string
+  group?: G
 
   date: string
 
@@ -13,6 +15,9 @@ export interface Lesson {
 
   participants: LessonParticipant[]
 }
+
+export interface LessonWithUsers
+  extends Lesson<PopulatedUser | null, PopulatedUser, PopulatedUser> {}
 
 export interface LessonParticipant {
   student: string

@@ -9,9 +9,10 @@ import { IconUser } from '@tabler/icons'
 
 import { IntegratedTable, useTableSelection } from '../../table'
 import { CreateGroupButton } from '../data/group-modals'
+import { PopulatedUser } from '../../users/types'
 import { ErrorAlert } from '../../ui'
 import { useGetGroups } from '../hooks'
-import { GroupStudent, GroupWithStudents } from '../types'
+import { GroupWithStudents } from '../types'
 import { GroupsTableSelection } from './types'
 import { GroupsActions } from './groups-actions'
 import { SelectionIndicator } from './selection-indicator'
@@ -122,7 +123,7 @@ export const GroupsTable = () => {
   )
 }
 
-const ShowStudents = ({ students }: { students: GroupStudent[] }) => {
+const ShowStudents = ({ students }: { students: PopulatedUser[] }) => {
   return (
     <Group>
       {students.map((student) => (

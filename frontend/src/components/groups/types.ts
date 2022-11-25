@@ -1,4 +1,4 @@
-import { Student } from '../users/types'
+import { PopulatedUser } from '../users/types'
 
 export interface Group<T = string> {
   _id: string
@@ -6,6 +6,6 @@ export interface Group<T = string> {
   students?: T[]
 }
 
-export interface GroupStudent extends Pick<Student, '_id' | 'name' | 'role'> {}
+export interface PopulatedGroup extends Pick<Group, '_id' | 'name'> {}
 
-export interface GroupWithStudents extends Group<GroupStudent> {}
+export interface GroupWithStudents extends Group<PopulatedUser> {}

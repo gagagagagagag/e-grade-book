@@ -77,7 +77,22 @@ export class LessonsService {
     const data = await this.lessonModel.find(
       queryBuilder.getQuery(),
       this.getLessonProjection(currentUser.role),
-      paginationOptions.createFindOptions()
+      paginationOptions.createFindOptions({
+        populate: [
+          {
+            path: 'teacher',
+            select: '_id name role',
+          },
+          {
+            path: 'group',
+            select: '_id name',
+          },
+          {
+            path: 'student',
+            select: '_id name',
+          },
+        ],
+      })
     )
 
     const count = await this.lessonModel.countDocuments(queryBuilder.getQuery())

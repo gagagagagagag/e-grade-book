@@ -1,18 +1,23 @@
 import { useState, useMemo } from 'react'
-import { Group } from '@mantine/core'
+import { DateTime } from 'luxon'
+import { Group, Text } from '@mantine/core'
 import {
   createColumnHelper,
   PaginationState,
   SortingState,
 } from '@tanstack/react-table'
+import { IconUser, IconUsers } from '@tabler/icons'
 
+import { useCurrentRole } from '../../auth/hooks'
 import { IntegratedTable } from '../../table'
+import { UserRoles } from '../../users/types'
 import { ErrorAlert } from '../../ui'
 import { useGetLessons } from '../hooks'
-import { Lesson } from '../types'
+import { LessonWithUsers } from '../types'
 import { LessonsActions } from './lessons-actions'
 
 export const LessonsTable = () => {
+  const currentRole = useCurrentRole()
   const [sorting, setSorting] = useState<SortingState>([])
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -30,21 +35,45 @@ export const LessonsTable = () => {
   })
 
   const columns = useMemo(() => {
-    const columnHelper = createColumnHelper<Lesson>()
+    const columnHelper = createColumnHelper<LessonWithUsers>()
 
-    return [
-      columnHelper.accessor('date', {
-        id: 'date',
-      }),
-      columnHelper.accessor('duration', {
-        id: 'duration',
-      }),
-      columnHelper.display({
-        id: 'actions',
-        cell: ({ row }) => <LessonsActions lesson={row.original} />,
-      }),
-    ]
-  }, [])
+    const targetColumn = columnHelper.display({
+      id: 'target',
+      header: 'Uczestnik',
+      cell: ({ row }) => <ShowTarget lesson={row.original} />,
+    })
+    const dateColumn = columnHelper.accessor('date', {
+      id: 'date',
+      header: 'Data',
+      cell: ({ getValue }) =>
+        DateTime.fromISO(getValue()).toFormat('dd.MM.yyyy'),
+    })
+    const durationColumn = columnHelper.accessor('duration', {
+      id: 'duration',
+      header: 'Czas trwania',
+      cell: ({ getValue }) => <ShowLessonDuration duration={getValue()} />,
+    })
+    const actionsColumn = columnHelper.display({
+      id: 'actions',
+      cell: ({ row }) => <LessonsActions lesson={row.original} />,
+    })
+
+    if (currentRole === UserRoles.Admin) {
+      return [
+        columnHelper.accessor('teacher', {
+          id: 'teacher',
+          header: 'Nauczyciel',
+          cell: ({ getValue }) => <ShowTeacher name={getValue()?.name} />,
+        }),
+        targetColumn,
+        dateColumn,
+        durationColumn,
+        actionsColumn,
+      ]
+    }
+
+    return []
+  }, [currentRole])
 
   if (error) {
     return <ErrorAlert message={'Wystąpił błąd podczas pobierania danych'} />
@@ -61,5 +90,53 @@ export const LessonsTable = () => {
       onChangePagination={setPagination}
       extras={<Group spacing={'md'}></Group>}
     />
+  )
+}
+
+const ShowTarget = ({ lesson }: { lesson: LessonWithUsers }) => {
+  if (!lesson.group && !lesson.student) {
+    return null
+  }
+
+  let label = lesson.student?.name ?? lesson.group?.name
+  let role = lesson.student ? (
+    <>
+      <IconUser size={10} stroke={1} /> Uczeń
+    </>
+  ) : (
+    <>
+      <IconUsers size={10} stroke={1} /> Grupa
+    </>
+  )
+
+  return (
+    <>
+      <Text size={'sm'} weight={500}>
+        {label}
+      </Text>
+      <Text color={'dimmed'} size={'xs'}>
+        {role}
+      </Text>
+    </>
+  )
+}
+
+const ShowTeacher = ({ name }: { name?: string }) => {
+  if (!name) {
+    return null
+  }
+
+  return (
+    <Text size={'sm'} weight={500}>
+      {name}
+    </Text>
+  )
+}
+
+const ShowLessonDuration = ({ duration }: { duration: number }) => {
+  return (
+    <Text size={'sm'} weight={500}>
+      {duration} minut
+    </Text>
   )
 }

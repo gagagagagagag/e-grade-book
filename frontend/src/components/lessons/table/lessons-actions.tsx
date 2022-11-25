@@ -1,5 +1,5 @@
-import { Lesson } from '../types'
+import { LessonWithUsers } from '../types'
 
-export const LessonsActions = ({ lesson }: { lesson: Lesson }) => {
+export const LessonsActions = ({ lesson }: { lesson: LessonWithUsers }) => {
   return null
 }
