@@ -52,11 +52,11 @@ export const UsersActions = ({
         onClose={() => setAssignTo(null)}
         studentIds={[user._id]}
       />
-      <Group spacing={0} position="right">
+      <Group spacing={0} position={'right'}>
         <ActionIcon>
           <IconEye size={16} stroke={1.5} />
         </ActionIcon>
-        <Menu transition="pop" withArrow position="bottom-end">
+        <Menu transition={'pop'} position={'bottom-end'} withArrow>
           <Menu.Target>
             <ActionIcon>
               <IconDots size={16} stroke={1.5} />

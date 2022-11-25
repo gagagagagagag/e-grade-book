@@ -138,6 +138,10 @@ export class GroupsService {
     }
 
     const group = await this.groupModel.findByIdAndUpdate(id, attrs, {
+      populate: {
+        path: 'students',
+        select: '_id name role',
+      },
       new: true,
     })
 

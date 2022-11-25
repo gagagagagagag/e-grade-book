@@ -7,8 +7,8 @@ import {
   showWarningNotification,
 } from '../../../utils/custom-notifications'
 import { useGroupAssignToTeacher } from '../../users/hooks'
-import { Group } from '../types'
-import { useGroupCreate } from '../hooks'
+import { Group, GroupWithStudents } from '../types'
+import { useGroupCreate, useGroupUpdate } from '../hooks'
 import { GroupForm, GroupFormResult } from './group-form'
 
 export const CreateGroupButton = ({ onCreated }: { onCreated: () => void }) => {
@@ -87,6 +87,47 @@ export const CreateGroupModal = ({
           name: '',
         }}
         isEditing={false}
+      />
+    </Modal>
+  )
+}
+
+export const EditGroupModal = ({
+  group,
+  opened,
+  onClose,
+}: {
+  group: Group
+  opened: boolean
+  onClose: (updatedGroup?: GroupWithStudents) => void
+}) => {
+  const [loading, setLoading] = useState(false)
+  const groupUpdate = useGroupUpdate()
+
+  const updateGroupHandler = async (data: GroupFormResult) => {
+    setLoading(true)
+
+    try {
+      const updatedGroup = await groupUpdate(group._id, { name: data.name })
+
+      showSuccessNotification('Grupa została zmieniona!')
+      onClose(updatedGroup)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Modal title={'Edytuj grupę'} opened={opened} onClose={onClose}>
+      <GroupForm
+        initialValues={{
+          name: group.name,
+          addStudents: false,
+          addTeacher: false,
+        }}
+        loading={loading}
+        onSubmit={updateGroupHandler}
+        isEditing
       />
     </Modal>
   )

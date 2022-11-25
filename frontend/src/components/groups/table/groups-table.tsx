@@ -13,6 +13,7 @@ import { ErrorAlert } from '../../ui'
 import { useGetGroups } from '../hooks'
 import { Group as GroupType, GroupStudent, GroupWithStudents } from '../types'
 import { GroupsTableSelection } from './types'
+import { GroupsActions } from './groups-actions'
 
 export const GroupsTable = () => {
   const [q, setQ] = useState('')
@@ -62,8 +63,33 @@ export const GroupsTable = () => {
           />
         ),
       }),
+      columnHelper.display({
+        id: 'actions',
+        cell: ({ row }) => (
+          <GroupsActions
+            group={row.original}
+            onEdit={(updatedGroup) => {
+              mutate((data) => {
+                if (!data) {
+                  return data
+                }
+
+                return {
+                  ...data,
+                  data: data.data.map((group) => {
+                    if (group._id !== updatedGroup._id) {
+                      return group
+                    }
+                    return updatedGroup
+                  }),
+                }
+              })
+            }}
+          />
+        ),
+      }),
     ]
-  }, [])
+  }, [mutate])
 
   if (error) {
     return <ErrorAlert message={'Wystąpił błąd podczas pobierania danych'} />
@@ -99,9 +125,9 @@ const ShowStudents = ({ students }: { students: GroupStudent[] }) => {
   return (
     <Group>
       {students.map((student) => (
-        <Badge key={student._id}>
+        <Badge key={student._id} size={'md'} variant={'light'} color={'violet'}>
           <Group align={'center'} spacing={'xs'}>
-            <IconUser size={14} stroke={1} />
+            <IconUser size={14} stroke={3} />
             <Text size={'xs'}>{student.name}</Text>
           </Group>
         </Badge>

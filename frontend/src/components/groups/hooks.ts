@@ -53,6 +53,17 @@ export const useGroupCreate = () => {
   }
 }
 
+export const useGroupUpdate = () => {
+  return async (id: string, attrs: Pick<Group, 'name'>) => {
+    const { data } = await backendAxios.put<GroupWithStudents>(
+      `/groups/${id}`,
+      attrs
+    )
+
+    return data
+  }
+}
+
 export const useStudentAssignToGroup = () => {
   return async (studentId: string, groupId: string, add: boolean) => {
     return backendAxios.put('/groups/assignStudent', {
