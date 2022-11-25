@@ -1,8 +1,13 @@
 import useSWR from 'swr'
 
-import { Parent, Student, Teacher, User, UserRoles } from './types'
-import { fetchWithQuery, PaginationQuery, PaginationResponse } from '../data'
 import backendAxios from '../../axios-instance'
+import {
+  basicFetch,
+  fetchWithQuery,
+  PaginationQuery,
+  PaginationResponse,
+} from '../data'
+import { Parent, Student, Teacher, User, UserRoles } from './types'
 
 export interface GetUsersQuery extends PaginationQuery {
   role?: string
@@ -10,6 +15,10 @@ export interface GetUsersQuery extends PaginationQuery {
 
 export const useGetUsers = (query: GetUsersQuery) => {
   return useSWR<PaginationResponse<User>>(['/users', query], fetchWithQuery)
+}
+
+export const useGetMyStudents = () => {
+  return useSWR<Student[]>('/users/my', basicFetch)
 }
 
 export interface GetAllTeachersQuery {

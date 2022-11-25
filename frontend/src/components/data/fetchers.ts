@@ -3,6 +3,12 @@ import qs from 'query-string'
 
 import backendAxios from '../../axios-instance'
 
+export const basicFetch = async (url: string) => {
+  const { data } = await backendAxios.get(url)
+
+  return data
+}
+
 export const fetchWithQuery = async (url: string, query: object) => {
   const sanitizedQuery = omitBy({ ...query }, isNil)
 

@@ -1,4 +1,4 @@
-import { Loader } from '@mantine/core'
+import { Loader, SelectProps } from '@mantine/core'
 
 import {
   ErrorAlert,
@@ -14,6 +14,7 @@ import {
   useGetAllParents,
   useGetAllStudents,
   useGetAllTechers,
+  useGetMyStudents,
 } from './hooks'
 
 export const AllTeachersSelect = ({
@@ -73,6 +74,30 @@ export const AllParentsSelect = ({
       data={(data || []).map((parent) => ({
         label: parent.name,
         value: parent._id,
+      }))}
+    />
+  )
+}
+
+export const MyStudentsSelect = (selectProps: SelectProps) => {
+  const { isValidating, data, error } = useGetMyStudents()
+
+  if (error) {
+    return (
+      <ErrorAlert message={'Wystąpił błąd przy pobieraniu danych uczniów'} />
+    )
+  }
+
+  if (isValidating) {
+    return <Loader />
+  }
+
+  return (
+    <SelectAll
+      {...selectProps}
+      data={(data || []).map((student) => ({
+        label: student.name,
+        value: student._id,
       }))}
     />
   )

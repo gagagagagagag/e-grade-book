@@ -2,7 +2,12 @@ import { useCallback } from 'react'
 import useSWR from 'swr'
 import backendAxios from '../../axios-instance'
 
-import { fetchWithQuery, PaginationQuery, PaginationResponse } from '../data'
+import {
+  basicFetch,
+  fetchWithQuery,
+  PaginationQuery,
+  PaginationResponse,
+} from '../data'
 import { PopulatedUser } from '../users/types'
 import { Group, GroupWithStudents } from './types'
 
@@ -13,6 +18,10 @@ export const useGetGroups = (query: GetGroupsQuery) => {
     ['/groups', query],
     fetchWithQuery
   )
+}
+
+export const useGetMyGroups = () => {
+  return useSWR<GroupWithStudents[]>('/groups/my', basicFetch)
 }
 
 export interface GetAllGroupsQuery {
