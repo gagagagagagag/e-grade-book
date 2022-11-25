@@ -8,11 +8,13 @@ export const TableFilters = ({
   active,
   onReset,
   children,
+  width = 300,
 }: TableFiltersProps) => {
   const [opened, setOpened] = useState(false)
 
   return (
     <Popover
+      width={width}
       opened={opened}
       position={'bottom-end'}
       onClose={() => setOpened(false)}

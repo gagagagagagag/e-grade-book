@@ -6,6 +6,7 @@ import {
   PaginationState,
   SortingState,
 } from '@tanstack/react-table'
+import { DateRangePickerValue } from '@mantine/dates'
 import { IconUser, IconUsers } from '@tabler/icons'
 
 import { useCurrentRole } from '../../auth/hooks'
@@ -21,6 +22,14 @@ import { LessonsStudent } from './lessons-student'
 
 export const LessonsTable = () => {
   const currentRole = useCurrentRole()
+  const [dateFromTo, setDateFromTo] = useState<DateRangePickerValue>([
+    null,
+    null,
+  ])
+  const [dateFromFilter, dateToFilter] = dateFromTo
+  const [teacherFilter, setTeacherFilter] = useState<string | null>(null)
+  const [groupFilter, setGroupFilter] = useState<string | null>(null)
+  const [studentFilter, setStudentFilter] = useState<string | null>(null)
   const [sorting, setSorting] = useState<SortingState>([])
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -35,6 +44,15 @@ export const LessonsTable = () => {
         ? 'desc'
         : 'asc'
       : undefined,
+    from: dateFromFilter
+      ? DateTime.fromJSDate(dateFromFilter).startOf('day').toISO()
+      : undefined,
+    to: dateToFilter
+      ? DateTime.fromJSDate(dateToFilter).endOf('day').toISO()
+      : undefined,
+    teacher: teacherFilter,
+    group: groupFilter,
+    student: studentFilter,
   })
 
   const columns = useMemo(() => {
@@ -82,6 +100,13 @@ export const LessonsTable = () => {
     return <ErrorAlert message={'Wystąpił błąd podczas pobierania danych'} />
   }
 
+  const filtersActive =
+    Boolean(dateFromFilter) ||
+    Boolean(dateToFilter) ||
+    Boolean(teacherFilter) ||
+    Boolean(groupFilter) ||
+    Boolean(studentFilter)
+
   return (
     <IntegratedTable
       loading={isValidating}
@@ -94,8 +119,32 @@ export const LessonsTable = () => {
       extras={
         <Group spacing={'md'}>
           <LessonsStudent currentRole={currentRole} />
-          <TableFilters active={false} onReset={() => {}}>
-            <LessonsFilters currentRole={currentRole} />
+          <TableFilters
+            active={filtersActive}
+            onReset={() => {
+              setDateFromTo([null, null])
+              setTeacherFilter(null)
+              setGroupFilter(null)
+              setStudentFilter(null)
+            }}
+          >
+            <LessonsFilters
+              currentRole={currentRole}
+              dateFromTo={dateFromTo}
+              onDateFromToChange={setDateFromTo}
+              teacherFilter={teacherFilter}
+              onTeacherFilterChange={setTeacherFilter}
+              groupFilter={groupFilter}
+              onGroupFilterChange={(value) => {
+                setStudentFilter(null)
+                setGroupFilter(value)
+              }}
+              studentFilter={studentFilter}
+              onStudentFilterChange={(value) => {
+                setGroupFilter(null)
+                setStudentFilter(value)
+              }}
+            />
           </TableFilters>
           <LessonsExportButton currentRole={currentRole} />
         </Group>

@@ -33,4 +33,5 @@ export type TableFiltersProps = {
   active: boolean
   onReset: () => void
   children: React.ReactNode
+  width?: number
 }
