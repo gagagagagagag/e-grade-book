@@ -1,7 +1,12 @@
 import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common'
 import { SkipThrottle } from '@nestjs/throttler'
 
-import { IsAdmin, IsAuthenticated, CurrentUser } from '../auth/decorators'
+import {
+  IsAdmin,
+  IsAuthenticated,
+  CurrentUser,
+  IsTeacherOrParent,
+} from '../auth/decorators'
 import { PaginationOptions } from '../decorators'
 import { PaginationOptionsDto } from '../dtos'
 import { AssignStudentDto, AssignGroupDto, UpdateUserDto } from './dtos'
@@ -27,6 +32,12 @@ export class UsersController {
       notAssignedToTeacher,
       notAssignedToParent,
     })
+  }
+
+  @IsTeacherOrParent()
+  @Get('/my')
+  getMyUsers(@CurrentUser() currentUser: User) {
+    return this.usersService.getMyUsers(currentUser)
   }
 
   @SkipThrottle()

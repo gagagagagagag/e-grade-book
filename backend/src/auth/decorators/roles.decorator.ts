@@ -24,3 +24,5 @@ export const IsTeacher = (allowAdmin = true) =>
       ? RolesGuard(UserRoles.Admin, UserRoles.Teacher)
       : RolesGuard(UserRoles.Teacher)
   )
+export const IsTeacherOrParent = () =>
+  UseGuards(JwtAuthGuard, RolesGuard(UserRoles.Teacher, UserRoles.Parent))

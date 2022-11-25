@@ -12,7 +12,7 @@ import {
 import { CurrentUser, IsAdmin, IsTeacher } from '../auth/decorators'
 import { PaginationOptions } from '../decorators'
 import { PaginationOptionsDto } from '../dtos'
-import { User } from '../users/schemas'
+import { TeacherUser, User } from '../users/schemas'
 import { CreateGroupDto, UpdateGroupDto, AssignStudentDto } from './dtos'
 import { GroupsService } from './groups.service'
 
@@ -30,6 +30,12 @@ export class GroupsController {
       notContainingStudents,
       notAssignedToTeacher,
     })
+  }
+
+  @IsTeacher()
+  @Get('/my')
+  getMyGroups(@CurrentUser() currentUser: TeacherUser) {
+    return this.groupsService.getMyGroups(currentUser)
   }
 
   @IsTeacher()

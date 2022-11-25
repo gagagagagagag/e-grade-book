@@ -108,6 +108,15 @@ export class GroupsService {
     })
   }
 
+  async getMyGroups(currentUser: TeacherUser) {
+    return this.groupModel.find({ _id: { $in: currentUser.groups } }, null, {
+      populate: {
+        path: 'students',
+        select: '_id name role',
+      },
+    })
+  }
+
   async findOneById(id: string | null) {
     if (!id) {
       return null

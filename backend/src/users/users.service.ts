@@ -306,6 +306,11 @@ export class UsersService {
     return this.userModel.find(queryBuilder.getQuery(), null, { lean: true })
   }
 
+  async getMyUsers(currentUser: User) {
+    const teacherUser = currentUser as TeacherUser
+    return this.userModel.find({ _id: { $in: teacherUser.students } })
+  }
+
   async assignGroup(teacherId: string, groupId: string, add: boolean) {
     const group = await this.groupsService.findOneById(groupId)
 
