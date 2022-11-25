@@ -97,7 +97,7 @@ export const EditGroupModal = ({
   opened,
   onClose,
 }: {
-  group: Group
+  group: GroupWithStudents
   opened: boolean
   onClose: (updatedGroup?: GroupWithStudents) => void
 }) => {

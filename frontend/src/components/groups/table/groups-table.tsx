@@ -43,7 +43,7 @@ export const GroupsTable = () => {
   })
 
   const columns = useMemo(() => {
-    const columnHelper = createColumnHelper<GroupType>()
+    const columnHelper = createColumnHelper<GroupWithStudents>()
 
     return [
       columnHelper.accessor('name', {
@@ -58,11 +58,7 @@ export const GroupsTable = () => {
       columnHelper.accessor('students', {
         id: 'students',
         header: 'Uczniowie',
-        cell: ({ getValue }) => (
-          <ShowStudents
-            students={(getValue() as unknown as GroupStudent[]) ?? []}
-          />
-        ),
+        cell: ({ getValue }) => <ShowStudents students={getValue() ?? []} />,
       }),
       columnHelper.display({
         id: 'actions',

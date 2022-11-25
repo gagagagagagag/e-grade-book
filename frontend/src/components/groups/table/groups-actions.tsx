@@ -3,13 +3,13 @@ import { IconDots, IconEye, IconPencil, IconTrash } from '@tabler/icons'
 import { useState } from 'react'
 import { EditGroupModal } from '../data/group-modals'
 
-import { Group as GroupType, GroupWithStudents } from '../types'
+import { GroupWithStudents } from '../types'
 
 export const GroupsActions = ({
   group,
   onEdit,
 }: {
-  group: GroupType
+  group: GroupWithStudents
   onEdit: (updatedGroup: GroupWithStudents) => void
 }) => {
   const [editGroup, setEditGroup] = useState(false)

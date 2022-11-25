@@ -7,6 +7,7 @@ import {
   DashboardPage,
   ManageUsersPage,
   ManageGroupsPage,
+  LessonsPage,
 } from '../pages'
 import { useAppDispatch, useAppSelector, authInitialize } from '../store'
 import { AppLoading } from './app-loading'
@@ -45,6 +46,7 @@ export const App = () => {
             <Route path={'/'} element={<DashboardPage />} />
             <Route path={'/user-management'} element={<ManageUsersPage />} />
             <Route path={'/group-management'} element={<ManageGroupsPage />} />
+            <Route path={'/lessons'} element={<LessonsPage />} />
             <Route path={'*'} element={<Navigate to={'/'} />} />
           </Route>
         </Routes>
