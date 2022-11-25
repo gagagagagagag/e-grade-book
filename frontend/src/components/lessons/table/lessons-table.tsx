@@ -91,6 +91,8 @@ export const LessonsTable = () => {
         durationColumn,
         actionsColumn,
       ]
+    } else if (currentRole === UserRoles.Teacher) {
+      return [targetColumn, dateColumn, durationColumn, actionsColumn]
     }
 
     return []
