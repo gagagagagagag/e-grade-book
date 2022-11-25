@@ -29,6 +29,8 @@ export class LessonsService {
     paginationOptions: PaginationOptionsDto,
     currentUser: User,
     filters: {
+      from?: string
+      to?: string
       teacher?: string
       group?: string
       student?: string
@@ -47,6 +49,26 @@ export class LessonsService {
       filters.group && { group: filters.group },
       filters.student && { 'participants.student': filters.student }
     )
+
+    if (filters.to || filters.from) {
+      let dateQuery = {}
+
+      if (filters.from) {
+        dateQuery = {
+          ...dateQuery,
+          $gte: filters.from,
+        }
+      }
+
+      if (filters.to) {
+        dateQuery = {
+          ...dateQuery,
+          $lte: filters.to,
+        }
+      }
+
+      queryBuilder.add({ date: dateQuery })
+    }
 
     switch (currentUser.role) {
       case UserRoles.Admin:

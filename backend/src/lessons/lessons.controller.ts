@@ -25,11 +25,15 @@ export class LessonsController {
   getLessons(
     @PaginationOptions() paginationOptions: PaginationOptionsDto,
     @CurrentUser() currentUser: User,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
     @Query('teacher') teacher?: string,
     @Query('group') group?: string,
     @Query('student') student?: string
   ) {
     return this.lessonsService.getLessons(paginationOptions, currentUser, {
+      from,
+      to,
       teacher,
       group,
       student,
