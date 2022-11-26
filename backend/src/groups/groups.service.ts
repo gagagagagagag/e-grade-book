@@ -1,5 +1,5 @@
 import { Model } from 'mongoose'
-import { reduce, uniq } from 'lodash'
+import { isEqual, reduce, uniq } from 'lodash'
 import {
   BadRequestException,
   forwardRef,
@@ -205,13 +205,28 @@ export class GroupsService {
   }
 
   async assertGroupContains(groupId: string, studentIds: string[]) {
-    const group = await this.groupModel.findOne({
-      _id: groupId,
-      students: { $all: studentIds },
-    })
+    const group = await this.groupModel.findOne(
+      {
+        _id: groupId,
+        students: { $all: studentIds },
+      },
+      null,
+      {
+        lean: true,
+      }
+    )
 
     if (!group) {
       throw new NotFoundException('Grupa nie zawiera podanych uczniów')
+    }
+
+    if (
+      !isEqual(
+        (group.students ?? []).map((student) => student.toString()).sort(),
+        studentIds.sort()
+      )
+    ) {
+      throw new BadRequestException('Grupa zawiera więcej uczniów niż podani')
     }
   }
 

@@ -14,11 +14,16 @@ import { IntegratedTable, TableFilters } from '../../table'
 import { UserRoles } from '../../users/types'
 import { ErrorAlert } from '../../ui'
 import { LessonsExportButton } from '../lessons-export'
-import { LessonWithUsers } from '../types'
+import { LessonPresence, LessonWithUsers } from '../types'
 import { useGetLessons } from '../hooks'
 import { LessonsActions } from './lessons-actions'
 import { LessonsFilters } from './lessons-filters'
 import { LessonsStudent } from './lessons-student'
+import {
+  ViewLessonHomework,
+  ViewLessonNote,
+  ViewLessonPresence,
+} from '../lesson-fields'
 
 export const LessonsTable = () => {
   const currentRole = useCurrentRole()
@@ -30,7 +35,12 @@ export const LessonsTable = () => {
   const [teacherFilter, setTeacherFilter] = useState<string | null>(null)
   const [groupFilter, setGroupFilter] = useState<string | null>(null)
   const [studentFilter, setStudentFilter] = useState<string | null>(null)
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: 'date',
+      desc: true,
+    },
+  ])
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 25,
@@ -94,7 +104,50 @@ export const LessonsTable = () => {
     } else if (currentRole === UserRoles.Teacher) {
       return [targetColumn, dateColumn, durationColumn, actionsColumn]
     } else {
-      return [dateColumn, durationColumn]
+      return [
+        dateColumn,
+        columnHelper.display({
+          id: 'presence',
+          header: 'Obecność',
+          cell: ({ row }) => {
+            const participant =
+              row.original.participants[row.original.participants.length - 1]
+
+            return <ViewLessonPresence status={participant.presence} />
+          },
+        }),
+        columnHelper.display({
+          id: 'homework',
+          header: 'Praca domowa',
+          cell: ({ row }) => {
+            const participant =
+              row.original.participants[row.original.participants.length - 1]
+
+            return (
+              <ViewLessonHomework
+                status={
+                  participant.presence !== LessonPresence.Absent
+                    ? participant.homework
+                    : undefined
+                }
+              />
+            )
+          },
+        }),
+        columnHelper.display({
+          id: 'note',
+          header: 'Uwagi',
+          cell: ({ row }) => (
+            <ViewLessonNote
+              content={
+                row.original.participants[row.original.participants.length - 1]
+                  .note
+              }
+            />
+          ),
+        }),
+        durationColumn,
+      ]
     }
   }, [currentRole])
 
@@ -107,7 +160,7 @@ export const LessonsTable = () => {
     Boolean(dateToFilter) ||
     Boolean(teacherFilter) ||
     Boolean(groupFilter) ||
-    Boolean(studentFilter)
+    (Boolean(studentFilter) && currentRole !== UserRoles.Parent)
 
   return (
     <IntegratedTable
@@ -131,7 +184,9 @@ export const LessonsTable = () => {
               setDateFromTo([null, null])
               setTeacherFilter(null)
               setGroupFilter(null)
-              setStudentFilter(null)
+              if (currentRole !== UserRoles.Parent) {
+                setStudentFilter(null)
+              }
             }}
           >
             <LessonsFilters
