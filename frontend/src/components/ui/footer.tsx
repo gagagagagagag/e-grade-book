@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { createStyles, Text, Stack, Group } from '@mantine/core'
+import { createStyles, Text } from '@mantine/core'
 
 import { Session } from '../auth'
 

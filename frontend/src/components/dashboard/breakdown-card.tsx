@@ -7,11 +7,7 @@ import {
   SimpleGrid,
   createStyles,
 } from '@mantine/core'
-import {
-  IconArrowUpRight,
-  IconDeviceAnalytics,
-  TablerIcon,
-} from '@tabler/icons'
+import { IconArrowUpRight, TablerIcon } from '@tabler/icons'
 
 const useStyles = createStyles((theme) => ({
   progressLabel: {
