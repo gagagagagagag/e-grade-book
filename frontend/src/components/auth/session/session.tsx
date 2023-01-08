@@ -40,7 +40,12 @@ export const Session = () => {
 
   return (
     <>
-      <Text>Czas do końca sesji: {sessionCountdown}</Text>
+      <Text size={'xs'}>
+        Czas do końca sesji:{' '}
+        <Text size={'xs'} fw={700} span>
+          {sessionCountdown}
+        </Text>
+      </Text>
     </>
   )
 }

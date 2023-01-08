@@ -1,4 +1,5 @@
-import { createStyles, Container, Text } from '@mantine/core'
+import { DateTime } from 'luxon'
+import { createStyles, Text, Stack, Group } from '@mantine/core'
 
 import { Session } from '../auth'
 
@@ -12,9 +13,10 @@ const useStyles = createStyles((theme) => ({
   inner: {
     display: 'flex',
     justifyContent: 'space-between',
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: theme.spacing.md,
-    paddingBottom: theme.spacing.md,
+    paddingBlock: theme.spacing.md,
+    paddingInline: theme.spacing.lg,
 
     [theme.fn.smallerThan('xs')]: {
       flexDirection: 'column',
@@ -27,10 +29,13 @@ export const Footer = () => {
 
   return (
     <div className={classes.footer}>
-      <Container className={classes.inner}>
-        <Text>Copyright</Text>
+      <div className={classes.inner}>
+        <Text size={'xs'}>
+          Copyright {DateTime.now().toFormat('yyyy')} © Szkoła programowania i
+          informatyki Ambitni
+        </Text>
         <Session />
-      </Container>
+      </div>
     </div>
   )
 }
