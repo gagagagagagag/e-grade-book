@@ -1,4 +1,5 @@
 import { isEqual, intersection } from 'lodash'
+import { DateTime } from 'luxon'
 import {
   BadRequestException,
   Injectable,
@@ -14,7 +15,12 @@ import { UsersService } from '../users/users.service'
 import { PaginationOptionsDto } from '../dtos'
 import { QueryBuilder } from '../utils'
 import { CreateLessonDto, UpdateLessonDto } from './dtos'
-import { Lesson, LessonDocument } from './lesson.schema'
+import {
+  Lesson,
+  LessonDocument,
+  LessonHomework,
+  LessonPresence,
+} from './lesson.schema'
 
 @Injectable()
 export class LessonsService {
@@ -237,6 +243,123 @@ export class LessonsService {
         'Lekcja nie była tworzona przez tego nauczyciela'
       )
     }
+  }
+
+  async getLessonStats(limitTo: {
+    student?: string | null
+    teacher?: string | null
+    group?: string | null
+  }) {
+    const dateNow = DateTime.now()
+    const periodStart = dateNow.minus({ days: 60 }).toJSDate()
+    const periodMiddle = dateNow.minus({ days: 30 }).toJSDate()
+
+    const queryBuilder = new QueryBuilder()
+
+    queryBuilder.add(Boolean(limitTo.teacher) && { teacher: limitTo.teacher })
+    queryBuilder.add(
+      Boolean(limitTo.student) && { 'participants.student': limitTo.student }
+    )
+    queryBuilder.add(Boolean(limitTo.group) && { group: limitTo.group })
+
+    const result = await this.lessonModel
+      .aggregate([
+        {
+          $match: {
+            date: { $gte: periodStart },
+            ...queryBuilder.getQuery(),
+          },
+        },
+        {
+          $group: {
+            _id: {
+              $cond: {
+                if: {
+                  $lt: ['$date', periodMiddle],
+                },
+                then: 'last',
+                else: 'current',
+              },
+            },
+            totalLessons: {
+              $count: {},
+            },
+            totalDuration: {
+              $sum: '$duration',
+            },
+            totalAttendance: {
+              $sum: {
+                $cond: {
+                  if: { $isArray: '$participants' },
+                  then: { $size: '$participants' },
+                  else: 'NA',
+                },
+              },
+            },
+            totalAbsence: {
+              $sum: {
+                $cond: {
+                  if: { $isArray: '$participants' },
+                  then: {
+                    $size: {
+                      $filter: {
+                        input: '$participants',
+                        as: 'participant',
+                        cond: {
+                          $eq: [
+                            '$$participant.presence',
+                            LessonPresence.Absent,
+                          ],
+                        },
+                      },
+                    },
+                  },
+                  else: 'NA',
+                },
+              },
+            },
+            totalMissingHomework: {
+              $sum: {
+                $cond: {
+                  if: { $isArray: '$participants' },
+                  then: {
+                    $size: {
+                      $filter: {
+                        input: '$participants',
+                        as: 'participant',
+                        cond: {
+                          $and: [
+                            {
+                              $ne: [
+                                '$$participant.presence',
+                                LessonPresence.Absent,
+                              ],
+                            },
+                            {
+                              $eq: [
+                                '$$participant.homework',
+                                LessonHomework.NotDone,
+                              ],
+                            },
+                          ],
+                        },
+                      },
+                    },
+                  },
+                  else: 'NA',
+                },
+              },
+            },
+          },
+        },
+      ])
+      .exec()
+
+    return result.reduce((res, doc) => {
+      res[doc._id] = { ...doc }
+
+      return res
+    }, {})
   }
 
   getLessonProjection(currentUserRole: UserRoles) {

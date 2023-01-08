@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module'
 import { MailerModule } from './mailer/mailer.module'
 import { GroupsModule } from './groups/groups.module'
 import { LessonsModule } from './lessons/lessons.module'
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { LessonsModule } from './lessons/lessons.module'
     MailerModule,
     GroupsModule,
     LessonsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

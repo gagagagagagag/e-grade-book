@@ -8,6 +8,7 @@ import { LessonsController } from './lessons.controller'
 import { Lesson, LessonSchema } from './lesson.schema'
 
 @Module({
+  exports: [LessonsService],
   providers: [LessonsService],
   controllers: [LessonsController],
   imports: [

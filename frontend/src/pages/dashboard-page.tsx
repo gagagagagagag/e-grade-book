@@ -1,4 +1,5 @@
 import { useCurrentUser } from '../components/auth/hooks'
+import { Dashboard } from '../components/dashboard'
 import { PageLayout } from '../components/ui'
 
 export const DashboardPage = () => {
@@ -10,9 +11,7 @@ export const DashboardPage = () => {
       canGoBack={false}
       clearNavigation
     >
-      <span style={{ display: 'inline-block', marginBottom: '4000px' }}>
-        Dashboard
-      </span>
+      <Dashboard />
     </PageLayout>
   )
 }
